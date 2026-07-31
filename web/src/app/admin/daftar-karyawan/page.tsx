@@ -1060,7 +1060,7 @@ export default function AdminEmployeesPage() {
       showEmployeeAlert(
         isEditing ? "Karyawan diperbarui" : "Karyawan berhasil dibuat",
         isEditing
-          ? "Data akun berhasil diperbarui dan sudah tersimpan di database."
+          ? "Data akun berhasil diperbarui dan sudah tersimpan."
           : "Akun baru berhasil dibuat dan siap digunakan untuk login.",
         "success",
       );
@@ -1933,10 +1933,9 @@ export default function AdminEmployeesPage() {
                           <option value="">Pilih Shift</option>
                           {activeShifts.map((shift) => (
                             <option key={shift.id} value={shift.id}>
-                              {shift.name} - Toleransi {shift.tolerance_minutes} m
+                               {shift.name} - Toleransi {shift.tolerance_minutes} m
                             </option>
-                          ))}
-                        </select>
+                          </select>
                       </div>
                     </div>
 

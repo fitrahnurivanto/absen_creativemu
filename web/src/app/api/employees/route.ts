@@ -886,7 +886,7 @@ export async function PATCH(req: NextRequest) {
       employment_end_date: Date | null;
       birth_place: string | null;
       birth_date: Date | null;
-      bank_name: string | null;
+      bank_code: string | null;
       bank_account_number: string | null;
       nik: string | null;
       registered_office_id: string;
@@ -911,7 +911,7 @@ export async function PATCH(req: NextRequest) {
       employment_end_date: normalizedEmploymentEndDate,
       birth_place: birthPlace,
       birth_date: birthDate,
-      bank_name: bankCode || null,
+      bank_code: bankCode || null,
       bank_account_number: bankAccountNumber,
       nik,
       registered_office_id: registeredOfficeId,

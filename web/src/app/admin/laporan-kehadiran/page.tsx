@@ -452,9 +452,7 @@ export default function AdminAttendanceReportPage() {
                 </div>
 
                 <div
-                  className="attendance-report-row-enter cursor-pointer rounded-2xl border border-amber-200 bg-amber-50 p-4 transition hover:bg-amber-100/70"
-                  onClick={() => setStatusFilter("uncheckout")}
-                  title="Klik untuk memfilter data Belum Checkout"
+                  className="attendance-report-row-enter rounded-2xl border border-amber-200 bg-amber-50 p-4"
                   style={{ animationDelay: "100ms" }}
                 >
                   <p className="text-xs font-bold text-amber-800">Belum Checkout</p>
