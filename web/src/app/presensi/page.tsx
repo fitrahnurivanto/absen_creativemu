@@ -60,6 +60,17 @@ type EarlyCheckinConfirm = {
   startLabel: string;
 };
 
+type WorkSchedule = {
+  day_of_week?: string | null;
+  dayOfWeek?: string | null;
+  is_work_day?: boolean | null;
+  isWorkDay?: boolean | null;
+  check_in_time?: string | null;
+  checkInTime?: string | null;
+  check_out_time?: string | null;
+  checkOutTime?: string | null;
+};
+
 type VisitForm = {
   visitTitle: string;
   visitClientName: string;
@@ -80,6 +91,8 @@ type CurrentUser = {
     end_time?: string | null;
     check_in_open?: string | null;
     check_out_open?: string | null;
+    work_schedules?: WorkSchedule[] | null;
+    workSchedules?: WorkSchedule[] | null;
   } | null;
   wfh_quota_monthly?: number | null;
   wfh_quota_used_monthly?: number | null;
@@ -449,50 +462,33 @@ function getShiftEndTime(
   return DEFAULT_SHIFT_END_TIME;
 }
 
-function getShiftCheckInOpenTime(
-  shift?:
-    | string
-    | null
-    | {
-        name?: string | null;
-        check_in_open?: string | null;
-      },
-) {
-  if (shift && typeof shift !== "string" && shift.check_in_open) {
-    return shift.check_in_open;
-  }
-
-  const name = String(
-    typeof shift === "string" ? shift : shift?.name || "",
-  ).toUpperCase();
-
-  if (name.includes("SIANG")) return "11:00"; // 2 jam sebelum jam 13:00
-  if (name.includes("PAGI")) return "06:30"; // 1 jam sebelum jam 07:30
-
-  return "07:00"; // Shift Utama — 1 jam sebelum jam 08:00
+function getJakartaDayOfWeek() {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Jakarta",
+    weekday: "long",
+  })
+    .format(new Date())
+    .toUpperCase();
 }
 
-function getShiftCheckOutOpenTime(
-  shift?:
-    | string
-    | null
-    | {
-        name?: string | null;
-        check_out_open?: string | null;
-      },
-) {
-  if (shift && typeof shift !== "string" && shift.check_out_open) {
-    return shift.check_out_open;
-  }
+function normalizeScheduleTime(value?: string | null) {
+  const text = String(value || "").trim();
 
-  const name = String(
-    typeof shift === "string" ? shift : shift?.name || "",
-  ).toUpperCase();
+  return /^\d{2}:\d{2}/.test(text) ? text.slice(0, 5) : "";
+}
 
-  if (name.includes("SIANG")) return "20:50";
-  if (name.includes("PAGI")) return "15:20";
+function getTodayWorkSchedule(user: CurrentUser | null) {
+  const schedules =
+    user?.shift?.work_schedules || user?.shift?.workSchedules || [];
+  const today = getJakartaDayOfWeek();
 
-  return "16:50"; // Shift Utama (10 menit sebelum 17.00)
+  return (
+    schedules.find((schedule) => {
+      const day = schedule.day_of_week || schedule.dayOfWeek || "";
+
+      return String(day).toUpperCase() === today;
+    }) || null
+  );
 }
 
 function getShiftToleranceMinutes(user: CurrentUser | null) {
@@ -506,19 +502,31 @@ function getShiftToleranceMinutes(user: CurrentUser | null) {
     : 5;
 }
 
-function getShiftCheckInOpenTimeFromUser(user: CurrentUser | null) {
-  return getShiftCheckInOpenTime(user?.shift);
-}
-
-function getShiftCheckOutOpenTimeFromUser(user: CurrentUser | null) {
-  return getShiftCheckOutOpenTime(user?.shift);
-}
-
 function getShiftStartTimeFromUser(user: CurrentUser | null) {
+  const schedule = getTodayWorkSchedule(user);
+  const scheduleStartTime = normalizeScheduleTime(
+    schedule?.check_in_time || schedule?.checkInTime,
+  );
+  const isWorkDay = schedule?.is_work_day ?? schedule?.isWorkDay;
+
+  if (scheduleStartTime && isWorkDay !== false) {
+    return scheduleStartTime;
+  }
+
   return getShiftStartTime(user?.shift);
 }
 
 function getShiftEndTimeFromUser(user: CurrentUser | null) {
+  const schedule = getTodayWorkSchedule(user);
+  const scheduleEndTime = normalizeScheduleTime(
+    schedule?.check_out_time || schedule?.checkOutTime,
+  );
+  const isWorkDay = schedule?.is_work_day ?? schedule?.isWorkDay;
+
+  if (scheduleEndTime && isWorkDay !== false) {
+    return scheduleEndTime;
+  }
+
   return getShiftEndTime(user?.shift);
 }
 
@@ -567,10 +575,10 @@ function getLateLimitLabel(user: CurrentUser | null) {
 
 function getEarlyCheckinMinutes(user: CurrentUser | null) {
   const nowMinutes = getJakartaMinutesNow();
-  const openTimeStr = getShiftCheckInOpenTimeFromUser(user);
-  const openMinutes = timeToMinutes(openTimeStr);
+  const startTimeStr = getShiftStartTimeFromUser(user);
+  const startMinutes = timeToMinutes(startTimeStr);
 
-  return nowMinutes < openMinutes ? openMinutes - nowMinutes : 0;
+  return nowMinutes < startMinutes ? startMinutes - nowMinutes : 0;
 }
 
 function isLateCheckInNow(user: CurrentUser | null) {

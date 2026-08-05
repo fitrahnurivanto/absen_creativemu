@@ -1064,7 +1064,6 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-
     const startTime = shouldValidateLate
       ? normalizeScheduleTime(todaySchedule?.check_in_time) ||
         effectiveShift?.start_time ||

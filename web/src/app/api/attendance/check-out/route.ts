@@ -165,8 +165,8 @@ function getShiftDefaultCheckOutTime(shiftName?: string | null) {
   if (name.includes("SHIFT SIANG")) return "21:00";
   if (name.includes("SIANG")) return "21:00";
 
-  if (name.includes("SHIFT PAGI")) return "17:00";
-  if (name.includes("PAGI")) return "17:00";
+  if (name.includes("SHIFT PAGI")) return "15:30";
+  if (name.includes("PAGI")) return "15:30";
 
   if (name.includes("MAGANG")) return "17:00";
   if (name.includes("UTAMA")) return "17:00";

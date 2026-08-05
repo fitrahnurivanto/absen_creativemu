@@ -56,8 +56,8 @@ function getDefaultTimeByShift(shiftName: string) {
 
   if (name.includes("PAGI")) {
     return {
-      checkIn: "07:00",
-      checkOut: "15:00",
+      checkIn: "07:30",
+      checkOut: "15:30",
     };
   }
 
