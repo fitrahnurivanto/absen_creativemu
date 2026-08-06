@@ -1,9 +1,11 @@
+import { Buffer } from "node:buffer";
+import fs from "node:fs";
+import path from "node:path";
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
-import type { UploadApiResponse } from "cloudinary";
-import { getCloudinary } from "@/lib/cloudinary";
 import {
   findAttendanceInDateRange,
   formatJakartaDate,
@@ -14,7 +16,6 @@ import {
 } from "@/lib/annual-leave-quota-schema";
 import {
   ensureLeaveAttachmentColumns,
-  isMissingLeaveAttachmentColumnError,
 } from "@/lib/leave-attachment-schema";
 
 export const runtime = "nodejs";
@@ -132,49 +133,37 @@ function getStatusLabel(status: string) {
   return status || "-";
 }
 
-async function uploadLeaveAttachment(
+function saveLocalLeaveAttachment(
   fileBuffer: Uint8Array,
   mime: string,
   fileName: string,
   userId: string,
-): Promise<UploadApiResponse | null> {
-  let cloudinary: ReturnType<typeof getCloudinary>;
+): { url: string; publicId: null } {
+  const uploadDir = path.join(process.cwd(), "public", "uploads", "leave-attachments");
 
-  try {
-    cloudinary = getCloudinary();
-  } catch (error) {
-    console.warn("LEAVE_ATTACHMENT_CLOUDINARY_UNAVAILABLE:", error);
-    return null;
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
   }
 
-  const isPdf = mime.includes("pdf");
-  const resourceType = isPdf ? "raw" : "image";
+  const extFromName = path.extname(fileName || "").toLowerCase();
+  const ext =
+    extFromName ||
+    (mime.includes("pdf")
+      ? ".pdf"
+      : mime.includes("png")
+        ? ".png"
+        : mime.includes("webp")
+          ? ".webp"
+          : ".jpg");
+  const filename = `leave-${userId}-${Date.now()}${ext}`;
+  const filePath = path.join(uploadDir, filename);
 
-  return new Promise<UploadApiResponse>((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder: "presensi/surat-dokter",
-        public_id: `leave-${userId}-${Date.now()}`,
-        resource_type: resourceType,
-        overwrite: false,
-      },
-      (error, result) => {
-        if (error) {
-          reject(error);
-          return;
-        }
+  fs.writeFileSync(filePath, Buffer.from(fileBuffer));
 
-        if (!result) {
-          reject(new Error("Cloudinary tidak mengembalikan hasil upload."));
-          return;
-        }
-
-        resolve(result);
-      },
-    );
-
-    uploadStream.end(Buffer.from(fileBuffer));
-  });
+  return {
+    url: `/uploads/leave-attachments/${filename}`,
+    publicId: null,
+  };
 }
 
 function mapLeaveRequest(item: {
@@ -187,6 +176,9 @@ function mapLeaveRequest(item: {
   reason: string;
   status: string;
   admin_note: string | null;
+  attachment_url?: string | null;
+  attachment_name?: string | null;
+  attachment_mime?: string | null;
   created_at: Date;
   updated_at: Date;
   user?: {
@@ -227,9 +219,9 @@ function mapLeaveRequest(item: {
     statusLabel: getStatusLabel(item.status),
 
     adminNote: item.admin_note,
-    attachmentUrl: (item as any).attachment_url || null,
-    attachmentName: (item as any).attachment_name || null,
-    attachmentMime: (item as any).attachment_mime || null,
+    attachmentUrl: item.attachment_url || null,
+    attachmentName: item.attachment_name || null,
+    attachmentMime: item.attachment_mime || null,
     createdAt: toIsoDate(item.created_at),
     updatedAt: toIsoDate(item.updated_at),
   };
@@ -317,11 +309,11 @@ export async function GET(req: NextRequest) {
 
     const stats = {
       total: mappedRequests.length,
-      pending: mappedRequests.filter((item: any) => item.status === "pending")
+      pending: mappedRequests.filter((item) => item.status === "pending")
         .length,
-      approved: mappedRequests.filter((item: any) => item.status === "approved")
+      approved: mappedRequests.filter((item) => item.status === "approved")
         .length,
-      rejected: mappedRequests.filter((item: any) => item.status === "rejected")
+      rejected: mappedRequests.filter((item) => item.status === "rejected")
         .length,
     };
 
@@ -383,7 +375,7 @@ export async function POST(req: NextRequest) {
         attachmentName = attachment.name || "lampiran";
       }
     } else {
-      let body: any = {};
+      let body: Record<string, unknown> = {};
       try {
         body = await req.json();
       } catch {
@@ -518,10 +510,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    let uploadedAttachment: UploadApiResponse | null = null;
+    let uploadedAttachment: { url: string; publicId: null } | null = null;
 
     if (attachmentBuffer && attachmentBuffer.length > 0) {
-      uploadedAttachment = await uploadLeaveAttachment(
+      uploadedAttachment = saveLocalLeaveAttachment(
         attachmentBuffer,
         attachmentMime,
         attachmentName,
@@ -540,8 +532,8 @@ export async function POST(req: NextRequest) {
         total_days: totalDays,
         reason,
         status: "pending",
-        attachment_url: uploadedAttachment?.secure_url || null,
-        attachment_public_id: uploadedAttachment?.public_id || null,
+        attachment_url: uploadedAttachment?.url || null,
+        attachment_public_id: uploadedAttachment?.publicId || null,
         attachment_name: attachmentName || null,
         attachment_mime: attachmentMime || null,
       },

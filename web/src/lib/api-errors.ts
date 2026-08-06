@@ -45,8 +45,8 @@ export function getApiErrorMessage(
       return fallback;
     }
 
-    if (message.includes("konfigurasi cloudinary belum lengkap")) {
-      return "Konfigurasi upload foto di hosting belum lengkap. Pastikan CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, dan CLOUDINARY_API_SECRET sudah diset.";
+    if (message.includes("konfigurasi upload")) {
+      return "Konfigurasi upload file di hosting belum lengkap.";
     }
 
     if (

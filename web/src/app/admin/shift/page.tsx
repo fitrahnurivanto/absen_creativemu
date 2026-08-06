@@ -2,7 +2,6 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
-  BadgeCheck,
   Clock3,
   Edit,
   Loader2,
@@ -25,8 +24,6 @@ type Shift = {
   id: string;
   name: string;
   tolerance_minutes?: number;
-  start_time?: string;
-  end_time?: string;
   check_in_open?: string;
   check_out_open?: string;
   status: string;
@@ -42,8 +39,6 @@ type ShiftForm = {
   name: string;
   status: string;
   tolerance_minutes: number;
-  start_time: string;
-  end_time: string;
   check_in_open: string;
   check_out_open: string;
 };
@@ -52,8 +47,6 @@ const initialForm: ShiftForm = {
   name: "",
   status: "active",
   tolerance_minutes: 5,
-  start_time: "08:00",
-  end_time: "17:00",
   check_in_open: "07:00",
   check_out_open: "16:50",
 };
@@ -197,8 +190,6 @@ export default function ShiftsPage() {
       name: item.name,
       status: item.status,
       tolerance_minutes: item.tolerance_minutes ?? 5,
-      start_time: item.start_time || "08:00",
-      end_time: item.end_time || "17:00",
       check_in_open: item.check_in_open || "07:00",
       check_out_open: item.check_out_open || "16:50",
     });
@@ -230,8 +221,6 @@ export default function ShiftsPage() {
         name,
         status: form.status,
         tolerance_minutes: form.tolerance_minutes,
-        start_time: form.start_time,
-        end_time: form.end_time,
         check_in_open: form.check_in_open,
         check_out_open: form.check_out_open,
       };
@@ -299,7 +288,11 @@ export default function ShiftsPage() {
         <div className="page-enter rounded-[2rem] border border-white/70 bg-white/95 p-5 shadow-xl shadow-slate-300/30 backdrop-blur-xl md:p-8">
           <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
-              <h1 className="text-3xl font-black tracking-tight text-slate-950 md:text-4xl">
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]">
+                Master Data Admin Panel
+              </p>
+
+              <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">
                 SHIFT KERJA
               </h1>
             </div>
@@ -417,22 +410,16 @@ export default function ShiftsPage() {
                       </div>
                     </div>
 
-                    {/* Time Info - Clean rows */}
+                    {/* Shift settings */}
                     <div className="mt-4 space-y-2">
                       <div className="flex items-center justify-between rounded-xl bg-blue-50/40 px-3 py-2">
-                        <span className="text-xs font-bold text-slate-500">Jam Kerja</span>
-                        <span className="text-sm font-black text-slate-800">
-                          {item.start_time || "08:00"} — {item.end_time || "17:00"}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between rounded-xl bg-blue-50/40 px-3 py-2">
-                        <span className="text-xs font-bold text-slate-500">Check-in Buka</span>
+                        <span className="text-xs font-bold text-slate-500">Check-in Dibuka</span>
                         <span className="text-sm font-black text-[#123c8c]">
                           {item.check_in_open || "07:00"}
                         </span>
                       </div>
                       <div className="flex items-center justify-between rounded-xl bg-blue-50/40 px-3 py-2">
-                        <span className="text-xs font-bold text-slate-500">Check-out Buka</span>
+                        <span className="text-xs font-bold text-slate-500">Check-out Dibuka</span>
                         <span className="text-sm font-black text-[#123c8c]">
                           {item.check_out_open || "16:50"}
                         </span>
@@ -510,10 +497,8 @@ export default function ShiftsPage() {
               <hr className="border-slate-100" />
 
               <p className="text-xs font-black uppercase tracking-widest text-[#123c8c]">
-                Pengaturan Waktu Absensi
+                Pengaturan Shift
               </p>
-
-
 
               <div className="grid grid-cols-2 gap-3">
                 <div>

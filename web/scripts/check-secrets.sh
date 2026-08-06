@@ -37,7 +37,6 @@ patterns=(
   'xox[baprs]-[A-Za-z0-9-]{20,}'
   'sk-[A-Za-z0-9_-]{20,}'
   '-----BEGIN (RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----'
-  'cloudinary://[0-9A-Za-z_:-]+@[A-Za-z0-9_-]+'
   '(mysql|mariadb|postgres|postgresql)://[^[:space:]'\''"]+:[^[:space:]'\''"@]+@'
 )
 

@@ -99,11 +99,6 @@ const quickMenus = [
     label: "Ajukan Izin/Cuti",
     icon: FileText,
   },
-  {
-    href: "/profil",
-    label: "Profil Data Diri",
-    icon: UserRound,
-  },
 ];
 
 function getFirstName(name: string) {
@@ -273,18 +268,20 @@ function ProfileAvatar({
         key={user.profile_photo}
         src={photoSrc}
         alt={user.name || "Profil"}
-        className={`home-icon-pop ${sizeClass} shrink-0 rounded-full object-cover ${size === "desktop" ? "ring-4 ring-white/70" : "ring-4 ring-white"
-          }`}
+        className={`home-icon-pop ${sizeClass} shrink-0 rounded-full object-cover ${
+          size === "desktop" ? "ring-4 ring-white/70" : "ring-4 ring-white"
+        }`}
       />
     );
   }
 
   return (
     <div
-      className={`home-icon-pop ${sizeClass} flex shrink-0 items-center justify-center rounded-full font-black ${variant === "blue"
+      className={`home-icon-pop ${sizeClass} flex shrink-0 items-center justify-center rounded-full font-black ${
+        variant === "blue"
           ? "bg-white/15 text-white ring-4 ring-white/20"
           : "bg-[#eaf1ff] text-[#123c8c] ring-4 ring-white"
-        }`}
+      }`}
     >
       {user.name ? getInitialName(user.name) : ""}
     </div>
@@ -306,15 +303,17 @@ function AnnouncementButton({
     <Link
       href={href}
       onClick={onClick}
-      className={`home-icon-pop relative flex shrink-0 items-center justify-center rounded-2xl ring-1 transition hover:-translate-y-0.5 active:scale-[0.96] ${desktop ? "h-16 w-16" : "h-12 w-12"
-        } ${unread
+      className={`home-icon-pop relative flex shrink-0 items-center justify-center rounded-2xl ring-1 transition hover:-translate-y-0.5 active:scale-[0.96] ${
+        desktop ? "h-16 w-16" : "h-12 w-12"
+      } ${
+        unread
           ? desktop
             ? "bg-white text-[#123c8c] ring-white"
             : "bg-[#123c8c] text-white ring-[#123c8c]"
           : desktop
             ? "bg-white/10 text-white/70 ring-white/20"
             : "bg-white text-slate-400 ring-blue-100"
-        }`}
+      }`}
       aria-label="Pengumuman"
     >
       <Bell
@@ -325,8 +324,9 @@ function AnnouncementButton({
 
       {unread ? (
         <span
-          className={`home-pulse-dot absolute rounded-full bg-red-500 ring-2 ring-white ${desktop ? "right-3 top-3 h-4 w-4" : "right-2 top-2 h-3 w-3"
-            }`}
+          className={`home-pulse-dot absolute rounded-full bg-red-500 ring-2 ring-white ${
+            desktop ? "right-3 top-3 h-4 w-4" : "right-2 top-2 h-3 w-3"
+          }`}
         />
       ) : null}
     </Link>
@@ -367,7 +367,7 @@ function RoleBadges({ items }: { items: Array<string | undefined | null> }) {
 
 function QuickMenuGrid() {
   return (
-    <div className="grid grid-cols-5 gap-x-1.5 gap-y-3 md:grid-cols-5 md:gap-4">
+    <div className="grid grid-cols-4 gap-x-1.5 gap-y-3 md:grid-cols-4 md:gap-4">
       {quickMenus.map(({ href, label, icon: Icon }, index) => (
         <Link
           key={href}
@@ -409,12 +409,13 @@ function AttendanceButton({
       onClick={(event) => {
         if (disabled) event.preventDefault();
       }}
-      className={`flex min-h-[48px] w-full flex-1 items-center justify-center rounded-2xl px-3 py-2.5 text-sm font-black transition md:h-20 md:min-h-0 md:px-6 md:py-0 md:text-lg ${disabled
+      className={`flex min-h-[48px] w-full flex-1 items-center justify-center rounded-2xl px-3 py-2.5 text-sm font-black transition md:h-20 md:min-h-0 md:px-6 md:py-0 md:text-lg ${
+        disabled
           ? "cursor-not-allowed border-slate-100 bg-slate-100 text-slate-300"
           : variant === "primary"
             ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20 hover:-translate-y-0.5 hover:bg-[#0f3274] active:scale-[0.98]"
             : "border border-blue-100 bg-white text-[#123c8c] hover:-translate-y-0.5 hover:bg-[#eaf1ff] active:scale-[0.98]"
-        }`}
+      }`}
     >
       {label}
     </Link>

@@ -1,4 +1,4 @@
--- Add attendance fields used by WFH, visit, Cloudinary photo storage, and late/early notes.
+-- Add attendance fields used by WFH, visit, photo storage, and late/early notes.
 ALTER TABLE `Attendance`
     ADD COLUMN `check_in_photo_url` TEXT NULL,
     ADD COLUMN `check_in_photo_public_id` VARCHAR(255) NULL,

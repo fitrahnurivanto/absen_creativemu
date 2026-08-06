@@ -1,8 +1,6 @@
-import type { UploadApiResponse } from "cloudinary";
 import { Buffer } from "node:buffer";
 import { NextRequest, NextResponse } from "next/server";
 
-import { getCloudinary } from "@/lib/cloudinary";
 import { isPhoneAttendanceRequest } from "@/lib/attendance-device";
 import { requireAuth } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
@@ -53,18 +51,11 @@ type ParsedAttendanceBody = {
 };
 
 type StoredAttendancePhoto =
-  | {
-      storage: "cloudinary";
-      data: null;
-      secureUrl: string;
-      publicId: string;
-    }
-  | {
-      storage: "database";
-      data: Uint8Array<ArrayBuffer>;
-      secureUrl: null;
-      publicId: null;
-    };
+  {
+    data: Uint8Array<ArrayBuffer>;
+    secureUrl: null;
+    publicId: null;
+  };
 
 async function getUserIdFromRequest(req: NextRequest) {
   const authUser = await requireAuth(req);
@@ -264,82 +255,14 @@ async function fileToBuffer(file: File) {
   };
 }
 
-async function uploadCheckOutPhoto(
-  photoBuffer: Uint8Array<ArrayBuffer>,
-  userId: string,
-): Promise<UploadApiResponse | null> {
-  let cloudinary: ReturnType<typeof getCloudinary>;
-
-  try {
-    cloudinary = getCloudinary();
-  } catch (error) {
-    console.warn("CHECK_OUT_CLOUDINARY_UNAVAILABLE:", error);
-    return null;
-  }
-
-  return new Promise<UploadApiResponse>((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder: "presensi/attendance/check-out",
-        public_id: `user-${userId}-${Date.now()}`,
-        resource_type: "image",
-        overwrite: false,
-      },
-      (error, result) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-
-        if (!result) {
-          reject(new Error("Cloudinary tidak mengembalikan hasil upload."));
-          return;
-        }
-
-        resolve(result);
-      },
-    );
-
-    uploadStream.end(Buffer.from(photoBuffer));
-  });
-}
-
 async function storeCheckOutPhoto(
   photoBuffer: Uint8Array<ArrayBuffer>,
-  userId: string,
 ): Promise<StoredAttendancePhoto> {
-  const uploadedPhoto = await uploadCheckOutPhoto(photoBuffer, userId);
-
-  if (uploadedPhoto) {
-    return {
-      storage: "cloudinary",
-      data: null,
-      secureUrl: uploadedPhoto.secure_url,
-      publicId: uploadedPhoto.public_id,
-    };
-  }
-
   return {
-    storage: "database",
     data: photoBuffer,
     secureUrl: null,
     publicId: null,
   };
-}
-
-async function deleteCloudinaryPhoto(publicId: string | null | undefined) {
-  if (!publicId) return;
-
-  try {
-    const cloudinary = getCloudinary();
-
-    await cloudinary.uploader.destroy(publicId, {
-      resource_type: "image",
-      invalidate: true,
-    });
-  } catch (error) {
-    console.warn("DELETE_CHECK_OUT_PHOTO_WARNING:", error);
-  }
 }
 
 async function parseAttendanceBody(
@@ -994,7 +917,7 @@ export async function POST(req: NextRequest) {
     const checkOutStatus =
       earlyLeaveMinutes > 0 ? ("EARLY" as const) : ("NORMAL" as const);
 
-    const storedPhoto = await storeCheckOutPhoto(photoBuffer, userId);
+    const storedPhoto = await storeCheckOutPhoto(photoBuffer);
 
     let updatedAttendance;
 
@@ -1117,15 +1040,7 @@ export async function POST(req: NextRequest) {
         return savedAttendance;
       });
     } catch (databaseError) {
-      await deleteCloudinaryPhoto(storedPhoto.publicId);
       throw databaseError;
-    }
-
-    if (
-      attendance.check_out_photo_public_id &&
-      attendance.check_out_photo_public_id !== storedPhoto.publicId
-    ) {
-      await deleteCloudinaryPhoto(attendance.check_out_photo_public_id);
     }
 
     return NextResponse.json({

@@ -261,7 +261,7 @@ model Attendance {
   check_in_photo_mime  String? @db.VarChar(50)
   check_out_photo_mime String? @db.VarChar(50)
 
-  // Foto baru disimpan di Cloudinary
+  // Foto baru disimpan sebagai data atau URL lokal
   check_in_photo_url       String? @db.Text
   check_in_photo_public_id String? @db.VarChar(255)
 

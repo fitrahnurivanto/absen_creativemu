@@ -2,12 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { Buffer } from "node:buffer";
 import fs from "node:fs";
 import path from "node:path";
-import type { UploadApiResponse } from "cloudinary";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAuth, requireOwner } from "@/lib/api-auth";
 import { jsonApiError } from "@/lib/api-response";
-import { getCloudinary } from "@/lib/cloudinary";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -206,80 +204,11 @@ async function uploadAnnouncementDocument(
   validatePdfDocument(file);
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const hasCloudinary = Boolean(
-    process.env.CLOUDINARY_CLOUD_NAME &&
-      process.env.CLOUDINARY_API_KEY &&
-      process.env.CLOUDINARY_API_SECRET,
-  );
-
-  if (hasCloudinary) {
-    try {
-      const cloudinary = getCloudinary();
-
-      const result = await new Promise<UploadApiResponse>((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          {
-            folder: "presensi/announcements",
-            public_id: `announcement-${announcementId}-${Date.now()}`,
-            resource_type: "raw",
-            overwrite: false,
-            use_filename: true,
-          },
-          (error, res) => {
-            if (error) {
-              reject(error);
-              return;
-            }
-
-            if (!res) {
-              reject(new Error("Cloudinary tidak mengembalikan hasil upload."));
-              return;
-            }
-
-            resolve(res);
-          },
-        );
-
-        uploadStream.end(buffer);
-      });
-
-      return {
-        secure_url: result.secure_url,
-        public_id: result.public_id,
-      };
-    } catch (cloudinaryError) {
-      console.warn(
-        "Cloudinary PDF upload failed, falling back to local storage:",
-        cloudinaryError,
-      );
-      const localResult = saveLocalAnnouncementDocument(file, buffer, announcementId);
-      return {
-        secure_url: localResult.url,
-        public_id: localResult.publicId,
-      };
-    }
-  }
-
   const localResult = saveLocalAnnouncementDocument(file, buffer, announcementId);
   return {
     secure_url: localResult.url,
     public_id: localResult.publicId,
   };
-}
-
-async function deleteAnnouncementDocument(publicId: string | null | undefined) {
-  if (!publicId) return;
-
-  try {
-    const cloudinary = getCloudinary();
-
-    await cloudinary.uploader.destroy(publicId, {
-      resource_type: "raw",
-      invalidate: true,
-    });
-  } catch (error) {
-    console.warn("DELETE_ANNOUNCEMENT_DOCUMENT_WARNING:", error);
-  }
 }
 
 export async function GET(req: NextRequest) {
@@ -410,8 +339,6 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  let uploadedDocumentPublicId: string | null = null;
-
   try {
     const admin = await getAdminUser(req);
 
@@ -486,7 +413,6 @@ export async function POST(req: NextRequest) {
           document,
           announcement.id,
         );
-        uploadedDocumentPublicId = uploadResult.public_id;
 
         savedAnnouncement = await prisma.announcement.update({
           where: {
@@ -540,16 +466,11 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("POST_ANNOUNCEMENT_ERROR:", error);
 
-    await deleteAnnouncementDocument(uploadedDocumentPublicId);
-
     return jsonError(error, "Gagal menyimpan pengumuman.");
   }
 }
 
 export async function PATCH(req: NextRequest) {
-  let uploadedDocumentPublicId: string | null = null;
-  let oldDocumentPublicId: string | null = null;
-
   try {
     await getAdminUser(req);
 
@@ -611,8 +532,6 @@ export async function PATCH(req: NextRequest) {
     if (document) {
       try {
         const uploadResult = await uploadAnnouncementDocument(document, id);
-        uploadedDocumentPublicId = uploadResult.public_id;
-        oldDocumentPublicId = existingAnnouncement.document_public_id;
 
         data.document_url = uploadResult.secure_url;
         data.document_public_id = uploadResult.public_id;
@@ -627,7 +546,6 @@ export async function PATCH(req: NextRequest) {
     }
 
     if (body.removeDocument === "true" || body.remove_document === "true") {
-      oldDocumentPublicId = existingAnnouncement.document_public_id;
       data.document_url = null;
       data.document_public_id = null;
       data.document_name = null;
@@ -663,13 +581,6 @@ export async function PATCH(req: NextRequest) {
       },
     });
 
-    if (
-      oldDocumentPublicId &&
-      oldDocumentPublicId !== uploadedDocumentPublicId
-    ) {
-      await deleteAnnouncementDocument(oldDocumentPublicId);
-    }
-
     const formattedAnnouncement = formatAnnouncement(announcement);
 
     return NextResponse.json({
@@ -681,8 +592,6 @@ export async function PATCH(req: NextRequest) {
     });
   } catch (error) {
     console.error("PATCH_ANNOUNCEMENT_ERROR:", error);
-
-    await deleteAnnouncementDocument(uploadedDocumentPublicId);
 
     return jsonError(error, "Gagal memperbarui pengumuman.");
   }
@@ -729,8 +638,6 @@ export async function DELETE(req: NextRequest) {
         id,
       },
     });
-
-    await deleteAnnouncementDocument(announcement.document_public_id);
 
     return NextResponse.json({
       success: true,

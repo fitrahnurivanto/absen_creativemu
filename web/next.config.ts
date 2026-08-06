@@ -6,15 +6,6 @@ const nextConfig: NextConfig = {
   distDir,
   output: "standalone",
 
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "res.cloudinary.com",
-      },
-    ],
-  },
-
   // Membatasi workspace Next.js ke folder web ini
   outputFileTracingRoot: process.cwd(),
 

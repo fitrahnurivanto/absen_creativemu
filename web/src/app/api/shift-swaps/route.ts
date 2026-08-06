@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
+import {
+  findActiveLeaveForDate,
+  formatJakartaDate,
+  getLeaveTypeLabel,
+} from "@/lib/leave-attendance-guard";
 import { prisma } from "@/lib/prisma";
 import {
   ensureShiftSwapTable,
@@ -12,6 +17,38 @@ import {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+async function getShiftSwapLeaveBlock(params: {
+  requesterId: string;
+  requesterName?: string | null;
+  targetUserId: string;
+  targetUserName?: string | null;
+  swapDate: Date;
+}) {
+  const [requesterLeave, targetLeave] = await Promise.all([
+    findActiveLeaveForDate({
+      userId: params.requesterId,
+      date: params.swapDate,
+    }),
+    findActiveLeaveForDate({
+      userId: params.targetUserId,
+      date: params.swapDate,
+    }),
+  ]);
+
+  const blockedLeave = requesterLeave || targetLeave;
+  if (!blockedLeave) return null;
+
+  const isRequesterBlocked = Boolean(requesterLeave);
+  const employeeName = isRequesterBlocked
+    ? params.requesterName || "Kamu"
+    : params.targetUserName || "Rekan kerja";
+  const leaveLabel = getLeaveTypeLabel(blockedLeave.leave_type);
+
+  return `${employeeName} sedang dalam periode ${leaveLabel} pada ${formatJakartaDate(
+    params.swapDate,
+  )}. Tukar shift tidak dapat diajukan kecuali untuk periode lembur.`;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -195,6 +232,18 @@ export async function POST(req: NextRequest) {
 
     const targetShiftName = targetUser.shift?.name || "Shift Utama";
     const swapDate = toShiftSwapDate(swapDateStr);
+
+    const leaveBlockMessage = await getShiftSwapLeaveBlock({
+      requesterId: user.id,
+      requesterName: "Kamu",
+      targetUserId,
+      targetUserName: targetUser.name,
+      swapDate,
+    });
+
+    if (leaveBlockMessage) {
+      return NextResponse.json({ error: leaveBlockMessage }, { status: 400 });
+    }
 
     if (!user.shift || !targetUser.shift) {
       return NextResponse.json(

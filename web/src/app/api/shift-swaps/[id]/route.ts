@@ -1,11 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/api-auth";
 import { getApiErrorMessage, getApiErrorStatus } from "@/lib/api-errors";
+import {
+  findActiveLeaveForDate,
+  formatJakartaDate,
+  getLeaveTypeLabel,
+} from "@/lib/leave-attendance-guard";
 import { prisma } from "@/lib/prisma";
 import { ensureShiftSwapTable } from "@/lib/shift-swap-schema";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+async function getApprovalLeaveBlockMessage(params: {
+  requesterId: string;
+  requesterName?: string | null;
+  targetUserId: string;
+  targetUserName?: string | null;
+  swapDate: Date;
+}) {
+  const [requesterLeave, targetLeave] = await Promise.all([
+    findActiveLeaveForDate({
+      userId: params.requesterId,
+      date: params.swapDate,
+    }),
+    findActiveLeaveForDate({
+      userId: params.targetUserId,
+      date: params.swapDate,
+    }),
+  ]);
+
+  const blockedLeave = requesterLeave || targetLeave;
+  if (!blockedLeave) return null;
+
+  const employeeName = requesterLeave
+    ? params.requesterName || "Pengaju"
+    : params.targetUserName || "Kamu";
+  const leaveLabel = getLeaveTypeLabel(blockedLeave.leave_type);
+
+  return `${employeeName} sedang dalam periode ${leaveLabel} pada ${formatJakartaDate(
+    params.swapDate,
+  )}. Tukar shift tidak dapat disetujui kecuali untuk periode lembur.`;
+}
 
 export async function PATCH(
   req: NextRequest,
@@ -54,6 +90,20 @@ export async function PATCH(
         { error: `Pengajuan ini sudah ${swapRequest.status === "approved" ? "disetujui" : "ditolak"}.` },
         { status: 400 },
       );
+    }
+
+    if (action === "approve") {
+      const leaveBlockMessage = await getApprovalLeaveBlockMessage({
+        requesterId: swapRequest.requester_id,
+        requesterName: swapRequest.requester.name,
+        targetUserId: swapRequest.target_user_id,
+        targetUserName: swapRequest.target_user.name,
+        swapDate: swapRequest.swap_date,
+      });
+
+      if (leaveBlockMessage) {
+        return NextResponse.json({ error: leaveBlockMessage }, { status: 400 });
+      }
     }
 
     const newStatus = action === "approve" ? "approved" : "rejected";

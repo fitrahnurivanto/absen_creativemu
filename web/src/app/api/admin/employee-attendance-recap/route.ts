@@ -276,6 +276,16 @@ export async function GET(req: NextRequest) {
             },
           },
         },
+        department: {
+          select: {
+            name: true,
+          },
+        },
+        registered_office: {
+          select: {
+            name: true,
+          },
+        },
       },
       orderBy: {
         name: "asc",
@@ -338,10 +348,26 @@ export async function GET(req: NextRequest) {
             category: DailyAttendanceCategory;
             checkInTime?: string | null;
             checkOutTime?: string | null;
+            scheduledCheckIn?: string | null;
+            scheduledCheckOut?: string | null;
             lateMinutes?: number;
+            earlyLeaveMinutes?: number;
             workMinutes?: number;
             workMode?: string | null;
             checkOutWorkMode?: string | null;
+            checkInStatus?: string | null;
+            checkOutStatus?: string | null;
+            status?: string | null;
+            note?: string | null;
+            lateReason?: string | null;
+            earlyLeaveReason?: string | null;
+            checkInLatitude?: number | null;
+            checkInLongitude?: number | null;
+            checkOutLatitude?: number | null;
+            checkOutLongitude?: number | null;
+            registeredOfficeName?: string | null;
+            checkInOfficeName?: string | null;
+            checkOutOfficeName?: string | null;
           }
         >(),
       ]),
@@ -364,10 +390,36 @@ export async function GET(req: NextRequest) {
         status: true,
         check_in_status: true,
         late_minutes: true,
+        early_leave_minutes: true,
         check_in_time: true,
         check_out_time: true,
+        scheduled_check_in: true,
+        scheduled_check_out: true,
         work_minutes: true,
         work_mode: true,
+        check_out_status: true,
+        note: true,
+        late_reason: true,
+        early_leave_reason: true,
+        check_in_latitude: true,
+        check_in_longitude: true,
+        check_out_latitude: true,
+        check_out_longitude: true,
+        registered_office: {
+          select: {
+            name: true,
+          },
+        },
+        check_in_office: {
+          select: {
+            name: true,
+          },
+        },
+        check_out_office: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
     const checkOutWorkModeByAttendanceId =
@@ -439,11 +491,31 @@ export async function GET(req: NextRequest) {
           checkOutTime: attendance.check_out_time
             ? attendance.check_out_time.toISOString()
             : null,
+          scheduledCheckIn: attendance.scheduled_check_in
+            ? attendance.scheduled_check_in.toISOString()
+            : null,
+          scheduledCheckOut: attendance.scheduled_check_out
+            ? attendance.scheduled_check_out.toISOString()
+            : null,
           lateMinutes: Number(attendance.late_minutes || 0),
+          earlyLeaveMinutes: Number(attendance.early_leave_minutes || 0),
           workMinutes: computedWorkMinutes,
           workMode: attendance.work_mode || "OFFICE",
           checkOutWorkMode:
             checkOutWorkModeByAttendanceId.get(attendance.id) || null,
+          checkInStatus: attendance.check_in_status || null,
+          checkOutStatus: attendance.check_out_status || null,
+          status: attendance.status || null,
+          note: attendance.note || null,
+          lateReason: attendance.late_reason || null,
+          earlyLeaveReason: attendance.early_leave_reason || null,
+          checkInLatitude: attendance.check_in_latitude,
+          checkInLongitude: attendance.check_in_longitude,
+          checkOutLatitude: attendance.check_out_latitude,
+          checkOutLongitude: attendance.check_out_longitude,
+          registeredOfficeName: attendance.registered_office?.name || null,
+          checkInOfficeName: attendance.check_in_office?.name || null,
+          checkOutOfficeName: attendance.check_out_office?.name || null,
         });
       } else {
         summary.menunggu += 1;
@@ -513,6 +585,9 @@ export async function GET(req: NextRequest) {
           workMinutes: 0,
           workMode: null,
           checkOutWorkMode: null,
+          checkInStatus: null,
+          checkOutStatus: null,
+          status: "LEAVE",
         });
       }
     }
@@ -553,6 +628,8 @@ export async function GET(req: NextRequest) {
           employmentStatus: employee.employment_status,
           status: employee.status,
           shiftName: employee.shift?.name || null,
+          departmentName: employee.department?.name || null,
+          registeredOfficeName: employee.registered_office?.name || null,
           summary: employeeSummaries.get(employee.id) || createEmptySummary(),
           dailyRecords: records,
           logs: records,

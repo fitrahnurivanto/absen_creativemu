@@ -27,7 +27,7 @@ type DashboardStats = {
 
 type RecentAttendance = {
   id: string;
-  attendanceId: string;
+  attendanceId: string | null;
   name: string;
   employeeCode?: string | null;
   profilePhoto?: string | null;
@@ -170,6 +170,16 @@ function getEmployeeMeta(item: RecentAttendance) {
     .join(" - ");
 }
 
+function getAttendanceDetailHref(item: RecentAttendance) {
+  const source = "from=dashboard";
+
+  if (item.attendanceId) {
+    return `/admin/laporan-kehadiran/${item.attendanceId}?${source}`;
+  }
+
+  return `/admin/rekap-kehadiran-karyawan/${item.id}?${source}`;
+}
+
 function EmployeeProfileAvatar({ item }: { item: RecentAttendance }) {
   const [imageError, setImageError] = useState(false);
   const profilePhoto = getDashboardProfilePhoto(item);
@@ -203,7 +213,6 @@ function MobileAttendanceCard({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const employeeMeta = getEmployeeMeta(item) || getEmployeeSubtitle(item);
-  const attendanceTargetId = item.attendanceId || item.id;
 
   return (
     <div
@@ -232,7 +241,7 @@ function MobileAttendanceCard({
 
         <div className="flex shrink-0 items-center gap-2">
           <Link
-            href={`/admin/laporan-kehadiran/${attendanceTargetId}`}
+            href={getAttendanceDetailHref(item)}
             className={`rounded-full px-3 py-1 text-[11px] font-black transition hover:opacity-80 ${getStatusClass(
               item,
             )}`}
@@ -298,7 +307,7 @@ function MobileAttendanceCard({
           </div>
 
           <Link
-            href={`/admin/laporan-kehadiran/${attendanceTargetId}`}
+            href={getAttendanceDetailHref(item)}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#123c8c] px-4 py-2.5 text-xs font-black text-white transition hover:bg-[#0f3274]"
           >
             <Eye size={15} />
@@ -535,8 +544,6 @@ export default function AdminDashboardPage() {
               </div>
             ) : data?.recentAttendance.length ? (
               data.recentAttendance.map((item, index) => {
-                const attendanceTargetId = item.attendanceId || item.id;
-
                 return (
                   <div
                     key={getAttendanceKey(item, index)}
@@ -566,30 +573,39 @@ export default function AdminDashboardPage() {
 
                       <div className="grid grid-cols-3 gap-2 text-xs font-bold text-slate-500 md:w-[320px] md:shrink-0">
                         <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
-                          <p className="text-[11px] font-bold text-slate-400">Masuk</p>
+                          <p className="text-[11px] font-bold text-slate-400">
+                            Masuk
+                          </p>
                           <p className="mt-0.5 text-sm font-black text-slate-800">
                             {formatTime(item.checkInTime)}
                           </p>
                         </div>
 
                         <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
-                          <p className="text-[11px] font-bold text-slate-400">Keluar</p>
+                          <p className="text-[11px] font-bold text-slate-400">
+                            Keluar
+                          </p>
                           <p className="mt-0.5 text-sm font-black text-slate-800">
                             {formatTime(item.checkOutTime)}
                           </p>
                         </div>
 
                         <div className="rounded-2xl border border-blue-50 bg-[#f8fbff] px-3.5 py-2.5">
-                          <p className="text-[11px] font-bold text-slate-400">Durasi</p>
+                          <p className="text-[11px] font-bold text-slate-400">
+                            Durasi
+                          </p>
                           <p className="mt-0.5 text-sm font-black text-slate-800">
-                            {formatMinutes(item.workMinutes, Boolean(item.checkOutTime))}
+                            {formatMinutes(
+                              item.workMinutes,
+                              Boolean(item.checkOutTime),
+                            )}
                           </p>
                         </div>
                       </div>
 
                       <div className="flex flex-wrap items-center gap-1.5 md:flex-1 md:justify-start">
                         <Link
-                          href={`/admin/laporan-kehadiran/${attendanceTargetId}`}
+                          href={getAttendanceDetailHref(item)}
                           className={`rounded-full px-3 py-1 text-xs font-black transition hover:opacity-80 ${getStatusClass(
                             item,
                           )}`}
@@ -624,7 +640,7 @@ export default function AdminDashboardPage() {
 
                       <div className="flex shrink-0 items-center justify-end">
                         <Link
-                          href={`/admin/laporan-kehadiran/${attendanceTargetId}`}
+                          href={getAttendanceDetailHref(item)}
                           className="inline-flex h-10 items-center justify-center gap-2 rounded-2xl border border-blue-100 bg-white px-4 text-xs font-black text-[#123c8c] shadow-sm transition hover:bg-[#eaf1ff] hover:shadow-md"
                         >
                           <Eye size={15} />
