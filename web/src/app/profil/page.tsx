@@ -11,7 +11,6 @@ import {
 import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
-  ArrowLeft,
   BadgeCheck,
   BriefcaseBusiness,
   Building2,
@@ -24,6 +23,7 @@ import {
   CreditCard,
   Image as ImageIcon,
   IdCard,
+  Info,
   Loader2,
   LockKeyhole,
   LogOut,
@@ -32,7 +32,6 @@ import {
   Network,
   Pencil,
   Phone,
-  Save,
   ShieldCheck,
   Upload,
   UserRound,
@@ -42,6 +41,13 @@ import {
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
+import {
+  FigmaHeader,
+  figmaButton,
+  figmaInput,
+  figmaLabel,
+  figmaLabelSoft,
+} from "@/components/ui/FigmaUI";
 import BankLogoBadge from "@/components/BankLogoBadge";
 import { AppBankSelect } from "@/components/AppBankSelect";
 import { getBankOption } from "@/lib/bank-options";
@@ -531,30 +537,30 @@ function SectionRow({
     <button
       type="button"
       onClick={onClick}
-      className={`profile-row-enter w-full transition hover:bg-[#f8fbff] active:scale-[0.99] ${isLast ? "" : "border-b border-slate-100"}`}
+      className={`profile-row-enter w-full transition active:bg-[#f4f8ff] ${isLast ? "" : "border-b border-[#e6edf8]"}`}
       style={{ animationDelay: delay }}
     >
-      <div className="flex w-full items-center gap-4 px-5 py-5 sm:px-6">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eef5ff] text-[#123c8c]">
-          <Icon size={24} strokeWidth={2.7} />
+      <div className="flex w-full items-center gap-4 px-4 py-4">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#2870ea] text-white">
+          <Icon size={22} strokeWidth={2.4} />
         </div>
 
         <div className="min-w-0 flex-1 text-left">
-          <p className="text-base font-black text-slate-950 md:text-lg">
+          <p className="text-[17px] font-semibold leading-6 text-[#111]">
             {title}
           </p>
 
           {subtitle ? (
-            <p className="mt-1 line-clamp-1 text-sm font-semibold text-slate-400">
+            <p className="line-clamp-1 text-[15px] text-slate-500">
               {subtitle}
             </p>
           ) : null}
         </div>
 
         <ChevronRight
-          size={24}
-          strokeWidth={2.8}
-          className="shrink-0 text-[#123c8c]"
+          size={22}
+          strokeWidth={2.2}
+          className="shrink-0 text-slate-400"
         />
       </div>
     </button>
@@ -573,27 +579,16 @@ function DetailItem({
   label,
   value,
   content,
-  icon: Icon,
   delay = "0ms",
 }: DetailItemProps) {
   return (
     <div
-      className="profile-row-enter rounded-3xl border border-blue-100 bg-white p-5 shadow-sm shadow-slate-200/40 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40 md:p-6"
+      className="profile-row-enter border-b border-[#e6edf8] px-4 py-3 last:border-b-0"
       style={{ animationDelay: delay }}
     >
-      <div className="flex items-start gap-4">
-        {Icon ? (
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#eef5ff] text-[#123c8c]">
-            <Icon size={22} strokeWidth={2.7} />
-          </div>
-        ) : null}
-
-        <div className="min-w-0">
-          <p className="text-sm font-bold text-slate-400">{label}</p>
-          <div className="mt-2 break-words text-lg font-black leading-7 text-[#123456]">
-            {content || value || "-"}
-          </div>
-        </div>
+      <p className="text-[13px] text-[#444]">{label}</p>
+      <div className="mt-1 break-words text-lg font-medium leading-6 text-[#0a3a8c]">
+        {content || value || "-"}
       </div>
     </div>
   );
@@ -618,9 +613,7 @@ function PasswordInput({
 }: PasswordInputProps) {
   return (
     <div className="profile-row-enter">
-      <label className="mb-2 block text-sm font-black text-slate-700">
-        {label}
-      </label>
+      <label className={figmaLabel}>{label}</label>
 
       <div className="relative">
         <input
@@ -628,13 +621,13 @@ function PasswordInput({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}
-          className="profile-field w-full rounded-2xl border border-blue-100 bg-[#f8fbff] px-4 py-3 pr-12 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:bg-white focus:ring-4 focus:ring-blue-100"
+          className={`${figmaInput} pr-12`}
         />
 
         <button
           type="button"
           onClick={onToggleShow}
-          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white hover:text-[#123c8c]"
+          className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 transition hover:text-[#0559e0]"
           aria-label={show ? "Sembunyikan password" : "Tampilkan password"}
         >
           {show ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -1127,12 +1120,6 @@ export function ProfilPageContent({
 
   const initials = user?.name ? getInitials(user.name) : "";
 
-  const subtitleInfo = useMemo(() => {
-    if (!user) return "";
-
-    return [].filter(Boolean).join(" • ");
-  }, [user]);
-
   const workSchedule = useMemo(() => {
     return getActiveScheduleText(user?.shift?.work_schedules);
   }, [user?.shift?.work_schedules]);
@@ -1306,7 +1293,7 @@ export function ProfilPageContent({
         />
       </div>
 
-      <main className="min-h-dvh bg-white pb-28 text-slate-950 md:bg-gradient-to-br md:from-[#f6f8ff] md:via-white md:to-[#eef4ff]">
+      <main className="min-h-dvh bg-[#f4f8ff] pb-28 text-slate-950">
         {loading ? (
           <section className="profile-enter mx-auto max-w-5xl px-5 pt-8 md:px-10">
             <div className="flex items-center gap-3 rounded-3xl border border-blue-100 bg-[#f8fbff] p-5 text-sm font-bold text-slate-500">
@@ -1323,282 +1310,271 @@ export function ProfilPageContent({
             </div>
           </section>
         ) : activeView === "personal-detail" ? (
-          <section className="profile-enter mx-auto max-w-5xl px-5 pt-5 md:px-10 md:pt-8">
-            <div className="flex items-center gap-4 md:hidden">
-              <button
-                type="button"
-                onClick={handleBackToMenu}
-                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-[#123456] shadow-sm shadow-slate-200 transition active:scale-[0.96]"
-              >
-                <ArrowLeft size={25} strokeWidth={2.8} />
-              </button>
+          <section className="profile-enter mx-auto max-w-2xl px-5 pb-6 pt-6 md:px-10 md:pt-8">
+            <FigmaHeader
+              title="Info Pribadi"
+              onBack={handleBackToMenu}
+              right={
+                <button
+                  type="button"
+                  onClick={openEditProfileModal}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-[#0559e0] px-3 py-2 text-xs font-medium text-white shadow-md shadow-[#0559e0]/30 transition active:scale-[0.97]"
+                >
+                  <Pencil size={14} strokeWidth={2.4} />
+                  Edit Detail
+                </button>
+              }
+            />
 
-              <h1 className="text-xl font-black text-[#123456]">
-                Info Pribadi
-              </h1>
-            </div>
+            <div
+              className="profile-row-enter mt-6 flex items-center gap-4 rounded-2xl bg-gradient-to-br from-[#2a6df0] to-[#0d3ea6] p-5 text-white shadow-lg shadow-[#0d3ea6]/30"
+              style={{ animationDelay: "60ms" }}
+            >
+              <div className="relative shrink-0">
+                <ProfileAvatar user={user} initials={initials} size="sm" />
+                <span
+                  className={`absolute bottom-0 right-0 h-4 w-4 rounded-full border-2 border-white ${
+                    formatStatus(user.status) === "Aktif"
+                      ? "bg-green-600"
+                      : "bg-slate-400"
+                  }`}
+                />
+              </div>
 
-            <div className="hidden items-center gap-4 md:flex">
-              <button
-                type="button"
-                onClick={handleBackToMenu}
-                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#123456] shadow-sm shadow-slate-200 transition hover:-translate-y-0.5 hover:bg-[#f8fbff] active:scale-[0.96]"
-              >
-                <ArrowLeft size={25} strokeWidth={2.8} />
-              </button>
-
-              <div>
-                <h1 className="mt-1 text-3xl font-black text-[#123456]">
-                  Info Pribadi
-                </h1>
+              <div className="min-w-0">
+                <h2 className="break-words text-xl font-semibold leading-6">
+                  {user.name}
+                </h2>
+                {user.position?.name ? (
+                  <p className="mt-1 text-sm text-white/80">
+                    {user.position.name}
+                  </p>
+                ) : null}
               </div>
             </div>
 
-            <div
-              className="profile-row-enter mt-10 flex flex-col items-center md:mt-8"
-              style={{ animationDelay: "60ms" }}
-            >
-              <ProfileAvatar user={user} initials={initials} size="md" />
+            <div className="mt-8 space-y-7">
+              {detailSections.map((section) => (
+                <div key={section.title}>
+                  <h3 className="mb-3 text-[15px] font-medium uppercase tracking-wide text-[#555]">
+                    {section.title}
+                  </h3>
 
-              <h2 className="mt-5 text-center text-2xl font-black text-[#123456] md:text-3xl">
-                {user.name}
-              </h2>
-
-              {user.position?.name ? (
-                <p className="mt-2 text-center text-base font-semibold text-slate-400">
-                  {user.position.name}
-                </p>
-              ) : null}
-
-              <button
-                type="button"
-                onClick={openEditProfileModal}
-                className="mt-5 inline-flex items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:-translate-y-0.5 hover:bg-[#0f3274] active:scale-[0.98]"
-              >
-                <Pencil size={17} strokeWidth={2.7} />
-                Edit Detail
-              </button>
-            </div>
-
-            <div className="mt-8 space-y-6">
-              {detailSections.map((section) => {
-                const SectionIcon = section.icon;
-                return (
-                  <div
-                    key={section.title}
-                    className="rounded-3xl border border-blue-100/80 bg-white/90 p-5 shadow-lg shadow-blue-950/5 backdrop-blur-md md:p-6"
-                  >
-                    <div className="mb-4 flex items-center gap-2.5 text-xs font-black uppercase tracking-wider text-[#123c8c]">
-                      <SectionIcon size={16} strokeWidth={2.5} />
-                      {section.title}
-                    </div>
-
-                    <div className="grid gap-3 md:grid-cols-2">
-                      {section.items.map((item, index) => (
-                        <DetailItem
-                          key={item.label}
-                          label={item.label}
-                          value={item.value}
-                          content={item.content}
-                          icon={item.icon}
-                          delay={`${index * 40}ms`}
-                        />
-                      ))}
-                    </div>
+                  <div className="overflow-hidden rounded-lg border border-[#dce6f5] bg-white">
+                    {section.items.map((item, index) => (
+                      <DetailItem
+                        key={item.label}
+                        label={item.label}
+                        value={item.value}
+                        content={item.content}
+                        delay={`${index * 40}ms`}
+                      />
+                    ))}
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </section>
         ) : (
-          <section className="profile-enter mx-auto max-w-5xl px-5 pt-5 md:px-10 md:pt-8">
-            <div className="flex flex-col items-center justify-center text-center">
-              <div className="profile-avatar-pop flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#123c8c] text-white shadow-xl shadow-blue-900/30">
-                <UserRound size={30} strokeWidth={2.7} />
+          <section className="profile-enter mx-auto max-w-xl px-5 pb-6 pt-8 md:px-10 md:pt-10">
+            <div className="rounded-3xl bg-gradient-to-br from-[#2a6df0] to-[#0d3ea6] px-5 pb-6 pt-7 text-white shadow-xl shadow-[#0d3ea6]/30">
+              <div className="flex items-center gap-4">
+                <div className="relative shrink-0">
+                  <ProfileAvatar user={user} initials={initials} size="sm" />
+                  <span
+                    className={`absolute bottom-0 right-0 h-4 w-4 rounded-full border-2 border-white ${
+                      formatStatus(user.status) === "Aktif"
+                        ? "bg-green-600"
+                        : "bg-slate-400"
+                    }`}
+                  />
+                </div>
+
+                <div className="min-w-0">
+                  <h1 className="break-words text-xl font-semibold leading-6">
+                    {user.name}
+                  </h1>
+                  {user.employee_code ? (
+                    <p className="mt-0.5 text-sm text-white/80">
+                      {user.employee_code}
+                    </p>
+                  ) : null}
+                  <p className="mt-0.5 text-sm font-semibold">
+                    {formatRole(user.role)}
+                  </p>
+                </div>
               </div>
 
-              <h1 className="mt-3 text-3xl font-black tracking-tight text-[#123456] md:text-4xl">
-                Akun
-              </h1>
+              <div className="mt-5 grid grid-cols-3 divide-x divide-[#dce6f5] rounded-lg bg-white py-3 text-center text-[#222] shadow-md">
+                <div>
+                  <p className="text-xs text-slate-600">Kuota WFH</p>
+                  <p className="text-2xl font-semibold">
+                    {Number(user.wfh_quota_monthly || 0) > 0
+                      ? user.wfh_quota_monthly
+                      : "Bebas"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-600">Terpakai</p>
+                  <p className="text-2xl font-semibold">
+                    {formatWfhQuota(user.wfh_quota_used_monthly)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-600">Sisa</p>
+                  <p className="text-2xl font-semibold">
+                    {formatWfhQuota(user.wfh_quota_remaining_monthly)}
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => router.push("/kartu-identitas")}
-              className="profile-row-enter mt-6 flex w-full items-center gap-5 rounded-[2rem] border border-blue-100 bg-white p-5 text-left shadow-xl shadow-slate-200/50 transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-slate-300/60 active:scale-[0.99] sm:p-6"
-              style={{ animationDelay: "60ms" }}
-            >
-              <ProfileAvatar user={user} initials={initials} size="sm" />
-
-              <div className="min-w-0 flex-1">
-                <h2 className="truncate text-xl font-black text-[#123456] md:text-3xl">
-                  {user.name}
-                </h2>
-
-                <p className="mt-1 truncate text-base font-semibold text-slate-400 md:text-lg">
-                  {subtitleInfo || formatRole(user.role)}
-                </p>
-              </div>
-
-              <ChevronRight
-                size={26}
-                strokeWidth={2.8}
-                className="shrink-0 text-[#123c8c]"
+            <div className="mt-6 overflow-hidden rounded-xl border border-[#dbe6f7] bg-white shadow-sm">
+              <SectionRow
+                icon={UserRound}
+                title="Info Pribadi"
+                subtitle="Lihat dan Kelola data diri kamu"
+                onClick={() => router.push(`/profil/${user.id}`)}
+                delay="60ms"
               />
-            </button>
 
-            <div
-              className="profile-row-enter mt-5 grid grid-cols-3 overflow-hidden rounded-[1.8rem] border border-blue-100 bg-white text-center shadow-xl shadow-slate-200/50"
-              style={{ animationDelay: "85ms" }}
-            >
-              <div className="flex flex-col items-center justify-center border-r border-blue-50 px-4 py-4 text-center">
-                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
-                  Kuota WFH
-                </p>
-                <p className="mt-1 text-base font-black text-[#123456]">
-                  {Number(user.wfh_quota_monthly || 0) > 0
-                    ? `${user.wfh_quota_monthly} Hari`
-                    : "Bebas WFH"}
-                </p>
-              </div>
-
-              <div className="flex flex-col items-center justify-center border-r border-blue-50 px-4 py-4 text-center">
-                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
-                  Terpakai
-                </p>
-                <p className="mt-1 text-lg font-black text-[#123456]">
-                  {formatWfhQuota(user.wfh_quota_used_monthly)}
-                </p>
-              </div>
-
-              <div className="flex flex-col items-center justify-center px-4 py-4 text-center">
-                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
-                  Sisa
-                </p>
-                <p className="mt-1 text-lg font-black text-[#123c8c]">
-                  {formatWfhQuota(user.wfh_quota_remaining_monthly)}
-                </p>
-              </div>
-            </div>
-
-            <div
-              className="profile-row-enter mt-10"
-              style={{ animationDelay: "100ms" }}
-            >
-
-              <div className="mt-4 overflow-hidden rounded-[1.8rem] border border-blue-100/80 bg-white shadow-xl shadow-slate-200/50">
-                <SectionRow
-                  icon={UserRound}
-                  title="Info Pribadi"
-                  onClick={() => router.push(`/profil/${user.id}`)}
-                  delay="120ms"
-                />
-
-                <label
-                  className={`profile-row-enter block w-full border-b border-slate-100 transition hover:bg-[#f8fbff] active:scale-[0.99] ${isUploadingPhoto
+              <label
+                className={`profile-row-enter block w-full border-b border-[#e6edf8] transition active:bg-[#f4f8ff] ${
+                  isUploadingPhoto
                     ? "cursor-not-allowed opacity-60"
                     : "cursor-pointer"
-                    }`}
-                  style={{ animationDelay: "160ms" }}
-                >
-                  <div className="flex w-full items-center gap-4 px-5 py-5 sm:px-6">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eef5ff] text-[#123c8c]">
-                      {isUploadingPhoto ? (
-                        <Loader2 size={23} className="animate-spin" />
-                      ) : (
-                        <ImageIcon size={24} strokeWidth={2.7} />
-                      )}
-                    </div>
-
-                    <div className="min-w-0 flex-1 text-left">
-                      <p className="text-base font-black text-slate-950 md:text-lg">
-                        Foto Data Pribadi
-                      </p>
-
-                      <p className="mt-1 line-clamp-1 text-sm font-semibold text-slate-400">
-                        {isUploadingPhoto
-                          ? "Mengupload foto..."
-                          : "Ubah foto profil akun"}
-                      </p>
-                    </div>
-
-                    <Upload
-                      size={24}
-                      strokeWidth={2.8}
-                      className="shrink-0 text-[#123c8c]"
-                    />
+                }`}
+                style={{ animationDelay: "100ms" }}
+              >
+                <div className="flex w-full items-center gap-4 px-4 py-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#2870ea] text-white">
+                    {isUploadingPhoto ? (
+                      <Loader2 size={22} className="animate-spin" />
+                    ) : (
+                      <ImageIcon size={22} strokeWidth={2.4} />
+                    )}
                   </div>
 
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    className="hidden"
-                    disabled={isUploadingPhoto}
-                    onChange={(event) => {
-                      const file = event.target.files?.[0];
+                  <div className="min-w-0 flex-1 text-left">
+                    <p className="text-[17px] font-semibold leading-6 text-[#111]">
+                      Foto Data Pribadi
+                    </p>
+                    <p className="line-clamp-1 text-[15px] text-slate-500">
+                      {isUploadingPhoto
+                        ? "Mengupload foto..."
+                        : "Ubah foto profil"}
+                    </p>
+                  </div>
 
-                      if (file) {
-                        void handleUploadProfilePhoto(file);
-                      }
-
-                      event.target.value = "";
-                    }}
+                  <ChevronRight
+                    size={22}
+                    strokeWidth={2.2}
+                    className="shrink-0 text-slate-400"
                   />
-                </label>
+                </div>
 
-                <SectionRow
-                  icon={LockKeyhole}
-                  title="Ubah Kata Sandi"
-                  onClick={openPasswordModal}
-                  delay="200ms"
-                  isLast
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  disabled={isUploadingPhoto}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+
+                    if (file) {
+                      void handleUploadProfilePhoto(file);
+                    }
+
+                    event.target.value = "";
+                  }}
                 />
-              </div>
+              </label>
+
+              <SectionRow
+                icon={CreditCard}
+                title="Kartu Karyawan"
+                subtitle="Lihat kartu identitas"
+                onClick={() => router.push("/kartu-identitas")}
+                delay="140ms"
+              />
+
+              <SectionRow
+                icon={LockKeyhole}
+                title="Ubah Kata Sandi"
+                subtitle="Ubah keamanan akun"
+                onClick={openPasswordModal}
+                delay="180ms"
+                isLast
+              />
             </div>
 
-            <button
-              type="button"
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="profile-row-enter mt-20 flex h-14 w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white text-base font-black text-[#123456] shadow-sm transition hover:-translate-y-0.5 hover:bg-red-50 hover:text-red-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 md:mx-auto md:mt-12 md:max-w-sm"
-              style={{ animationDelay: "240ms" }}
-            >
-              {isLoggingOut ? (
-                <>
-                  <Loader2 size={18} className="animate-spin" />
-                  Keluar...
-                </>
-              ) : (
-                <>
-                  <LogOut size={19} strokeWidth={2.7} />
-                  Keluar Akun
-                </>
-              )}
-            </button>
+            <div className="mt-5 overflow-hidden rounded-xl border border-[#dbe6f7] bg-white shadow-sm">
+              <button
+                type="button"
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="profile-row-enter flex w-full items-center gap-4 px-4 py-4 text-left transition active:bg-[#f4f8ff] disabled:cursor-not-allowed disabled:opacity-60"
+                style={{ animationDelay: "220ms" }}
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#c62f35] text-white">
+                  {isLoggingOut ? (
+                    <Loader2 size={22} className="animate-spin" />
+                  ) : (
+                    <LogOut size={22} strokeWidth={2.4} />
+                  )}
+                </div>
+
+                <span className="text-[17px] font-semibold text-[#111]">
+                  {isLoggingOut ? "Keluar..." : "Log Out"}
+                </span>
+              </button>
+            </div>
           </section>
         )}
 
         {isEditProfileModalOpen ? (
-          <div className="profile-modal-backdrop fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/50 px-4 pb-4 md:items-center md:pb-0">
-            <div className="profile-modal-panel max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl shadow-slate-950/30 md:p-7">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
-                    Edit Profil
+          <div className="profile-modal-backdrop fixed inset-0 z-[80] flex items-center justify-center bg-[#dfe8fb]/60 p-4 backdrop-blur-md">
+            <div className="profile-modal-panel max-h-[94dvh] w-full max-w-xl overflow-y-auto rounded-[2rem] border-2 border-[#c3d5f5] bg-[#f4f8ff] p-6 shadow-2xl shadow-[#0d3ea6]/20">
+              <h2 className="text-lg font-bold uppercase text-[#0a3a8c]">
+                Informasi Profil
+              </h2>
+
+              <div className="mt-5 flex items-center gap-4 rounded-3xl bg-gradient-to-br from-[#2a6df0] to-[#0d3ea6] p-5 shadow-lg shadow-[#0d3ea6]/30">
+                {user ? (
+                  <ProfileAvatar user={user} initials={initials} size="sm" />
+                ) : null}
+
+                <div className="min-w-0">
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-[#d9d9d9] px-4 py-2 text-sm font-medium text-black transition active:scale-[0.97]">
+                    {isUploadingPhoto ? (
+                      <>
+                        <Loader2 size={15} className="animate-spin" />
+                        Mengupload...
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={15} />
+                        Pilih Foto Baru
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      disabled={isUploadingPhoto}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (file) {
+                          void handleUploadProfilePhoto(file);
+                        }
+                        event.target.value = "";
+                      }}
+                    />
+                  </label>
+                  <p className="mt-2 text-xs text-blue-200">
+                    Format JPG, PNG, atau WEBP (maks. 5MB)
                   </p>
-
-                  <h2 className="mt-2 text-2xl font-black text-slate-950">
-                    Ubah Info Pribadi
-                  </h2>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={closeEditProfileModal}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700 active:scale-[0.96]"
-                >
-                  <X size={20} />
-                </button>
               </div>
 
               <form
@@ -1611,260 +1587,138 @@ export function ProfilPageContent({
                     event.preventDefault();
                   }
                 }}
-                className="mt-6 space-y-5"
+                className="mt-5 space-y-4"
               >
-                {/* GRUP 1: INFORMASI UTAMA */}
-                <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 space-y-4">
-                  <div className="text-xs font-black uppercase tracking-wider text-[#123c8c] flex items-center gap-2">
-                    <UserRound size={15} />
-                    Informasi Utama & Foto Profil
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-xs font-black text-slate-700">
-                      Foto Profil
-                    </label>
-                    <div className="flex items-center gap-4 rounded-2xl border border-blue-100 bg-white p-3">
-                      {user ? (
-                        <ProfileAvatar user={user} initials={initials} size="sm" />
-                      ) : null}
-                      <div className="min-w-0 flex-1">
-                        <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#123c8c] px-4 py-2.5 text-xs font-black text-white transition hover:bg-[#0f3274] active:scale-[0.97]">
-                          {isUploadingPhoto ? (
-                            <>
-                              <Loader2 size={15} className="animate-spin" />
-                              Mengupload...
-                            </>
-                          ) : (
-                            <>
-                              <Upload size={15} />
-                              Pilih Foto Baru
-                            </>
-                          )}
-                          <input
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp"
-                            className="hidden"
-                            disabled={isUploadingPhoto}
-                            onChange={(event) => {
-                              const file = event.target.files?.[0];
-                              if (file) {
-                                void handleUploadProfilePhoto(file);
-                              }
-                              event.target.value = "";
-                            }}
-                          />
-                        </label>
-                        <p className="mt-1.5 text-[11px] font-semibold text-slate-400">
-                          Format JPG, PNG, atau WEBP (maks. 5MB)
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-xs font-black text-slate-700">
-                      Nama Lengkap
-                    </label>
-                    <div className="relative">
-                      <UserRound
-                        size={18}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                      />
-                      <input
-                        value={editProfileForm.name}
-                        onChange={(event) =>
-                          setEditProfileForm((prev) => ({
-                            ...prev,
-                            name: event.target.value,
-                          }))
-                        }
-                        placeholder="Masukkan nama lengkap"
-                        className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-xs font-black text-slate-700">
-                      Nomor Telepon
-                    </label>
-                    <div className="relative">
-                      <Phone
-                        size={18}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                      />
-                      <input
-                        value={editProfileForm.phone}
-                        onChange={(event) =>
-                          handlePhoneInputChange(event.target.value)
-                        }
-                        onPaste={(event) => {
-                          const pastedText =
-                            event.clipboardData.getData("text");
-                          if (/\D/.test(pastedText) || pastedText.length > 13) {
-                            showProfileAlert(
-                              "Nomor telepon tidak valid",
-                              "Nomor telepon hanya boleh menggunakan angka tanpa spasi atau simbol, 10 sampai 13 digit.",
-                              "warning",
-                            );
-                          }
-                        }}
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        maxLength={13}
-                        placeholder="Contoh: 081234567890"
-                        className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
-                      />
-                    </div>
-                  </div>
+                <div>
+                  <label className={figmaLabelSoft}>Nama Lengkap</label>
+                  <input
+                    value={editProfileForm.name}
+                    onChange={(event) =>
+                      setEditProfileForm((prev) => ({
+                        ...prev,
+                        name: event.target.value,
+                      }))
+                    }
+                    placeholder="Masukkan nama lengkap"
+                    className={figmaInput}
+                  />
                 </div>
 
-                {/* GRUP 2: KELAHIRAN & IDENTITAS */}
-                <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 space-y-4">
-                  <div className="text-xs font-black uppercase tracking-wider text-[#123c8c] flex items-center gap-2">
-                    <IdCard size={15} />
-                    Kelahiran & NIK
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <label className="mb-2 block text-xs font-black text-slate-700">
-                        Tempat Lahir
-                      </label>
-                      <div className="relative">
-                        <MapPin
-                          size={18}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                        />
-                        <input
-                          value={editProfileForm.birth_place}
-                          onChange={(event) =>
-                            setEditProfileForm((prev) => ({
-                              ...prev,
-                              birth_place: event.target.value,
-                            }))
-                          }
-                          placeholder="Contoh: Jakarta"
-                          className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="mb-2 block text-xs font-black text-slate-700">
-                        Tanggal Lahir
-                      </label>
-                      <div className="relative">
-                        <CalendarDays
-                          size={18}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                        />
-                        <input
-                          type="date"
-                          value={editProfileForm.birth_date}
-                          onChange={(event) =>
-                            setEditProfileForm((prev) => ({
-                              ...prev,
-                              birth_date: event.target.value,
-                            }))
-                          }
-                          className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-xs font-black text-slate-700">
-                      NIK (16 Digit)
-                    </label>
-                    <div className="relative">
-                      <IdCard
-                        size={18}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                      />
-                      <input
-                        value={editProfileForm.nik}
-                        onChange={(event) =>
-                          handleNumericProfileInputChange(
-                            "nik",
-                            event.target.value,
-                          )
-                        }
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        maxLength={16}
-                        placeholder="Masukkan NIK"
-                        className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* GRUP 3: REKENING & BANK */}
-                <div className="rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 space-y-4">
-                  <div className="text-xs font-black uppercase tracking-wider text-[#123c8c] flex items-center gap-2">
-                    <CreditCard size={15} />
-                    Rekening Payroll & Bank
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <AppBankSelect
-                      label="Nama Bank"
-                      value={editProfileForm.bank_code}
-                      onChange={(val) =>
-                        setEditProfileForm((prev) => ({
-                          ...prev,
-                          bank_code: val,
-                        }))
+                <div>
+                  <label className={figmaLabelSoft}>Nomor Telepon</label>
+                  <input
+                    value={editProfileForm.phone}
+                    onChange={(event) =>
+                      handlePhoneInputChange(event.target.value)
+                    }
+                    onPaste={(event) => {
+                      const pastedText = event.clipboardData.getData("text");
+                      if (/\D/.test(pastedText) || pastedText.length > 13) {
+                        showProfileAlert(
+                          "Nomor telepon tidak valid",
+                          "Nomor telepon hanya boleh menggunakan angka tanpa spasi atau simbol, 10 sampai 13 digit.",
+                          "warning",
+                        );
                       }
-                    />
-
-                    <div>
-                      <label className="mb-2 block text-xs font-black text-slate-700">
-                        No Rekening
-                      </label>
-                      <div className="relative">
-                        <CreditCard
-                          size={18}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                        />
-                        <input
-                          value={editProfileForm.bank_account_number}
-                          onChange={(event) =>
-                            handleNumericProfileInputChange(
-                              "bank_account_number",
-                              event.target.value,
-                            )
-                          }
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          maxLength={16}
-                          placeholder="Masukkan no rekening"
-                          className="profile-field w-full rounded-2xl border border-blue-100 bg-white py-3 pl-11 pr-4 text-sm font-bold text-slate-700 outline-none transition focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                    }}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={13}
+                    placeholder="Contoh: 081234567890"
+                    className={figmaInput}
+                  />
                 </div>
 
-                <div
-                  className="profile-row-enter flex flex-col-reverse gap-3 pt-2 md:flex-row md:justify-end"
-                  style={{ animationDelay: "280ms" }}
-                >
-                  <button
-                    type="button"
-                    onClick={closeEditProfileModal}
-                    className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-black text-slate-600 transition hover:bg-slate-200 active:scale-[0.98]"
-                  >
-                    Batal
-                  </button>
+                <p className="pt-2 text-[15px] font-bold uppercase text-[#0a3a8c]">
+                  Kelahiran & NIK
+                </p>
 
+                <div>
+                  <label className={figmaLabelSoft}>Tempat Lahir</label>
+                  <input
+                    value={editProfileForm.birth_place}
+                    onChange={(event) =>
+                      setEditProfileForm((prev) => ({
+                        ...prev,
+                        birth_place: event.target.value,
+                      }))
+                    }
+                    placeholder="Contoh: Jakarta"
+                    className={figmaInput}
+                  />
+                </div>
+
+                <div>
+                  <label className={figmaLabelSoft}>Tanggal Lahir</label>
+                  <input
+                    type="date"
+                    value={editProfileForm.birth_date}
+                    onChange={(event) =>
+                      setEditProfileForm((prev) => ({
+                        ...prev,
+                        birth_date: event.target.value,
+                      }))
+                    }
+                    className={figmaInput}
+                  />
+                </div>
+
+                <div>
+                  <label className={figmaLabelSoft}>NIK (16 Digit)</label>
+                  <input
+                    value={editProfileForm.nik}
+                    onChange={(event) =>
+                      handleNumericProfileInputChange(
+                        "nik",
+                        event.target.value,
+                      )
+                    }
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={16}
+                    placeholder="Masukkan NIK"
+                    className={figmaInput}
+                  />
+                </div>
+
+                <p className="pt-2 text-[15px] font-bold uppercase text-[#0a3a8c]">
+                  Rekening Payroll & Bank
+                </p>
+
+                <AppBankSelect
+                  label="Nama Bank"
+                  value={editProfileForm.bank_code}
+                  onChange={(val) =>
+                    setEditProfileForm((prev) => ({
+                      ...prev,
+                      bank_code: val,
+                    }))
+                  }
+                />
+
+                <div>
+                  <label className={figmaLabelSoft}>No Rekening</label>
+                  <input
+                    value={editProfileForm.bank_account_number}
+                    onChange={(event) =>
+                      handleNumericProfileInputChange(
+                        "bank_account_number",
+                        event.target.value,
+                      )
+                    }
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={16}
+                    placeholder="Masukkan no rekening"
+                    className={figmaInput}
+                  />
+                </div>
+
+                <div className="space-y-3 pt-3">
                   <button
                     type="submit"
                     disabled={isUpdatingProfile}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                    className={figmaButton}
                   >
                     {isUpdatingProfile ? (
                       <>
@@ -1872,11 +1726,16 @@ export function ProfilPageContent({
                         Menyimpan...
                       </>
                     ) : (
-                      <>
-                        <Save size={18} />
-                        Simpan Perubahan
-                      </>
+                      "Simpan Pembaruan"
                     )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={closeEditProfileModal}
+                    className="flex h-[52px] w-full items-center justify-center rounded-xl border-2 border-[#2a6df0] bg-white text-lg font-semibold text-[#2a6df0] shadow-md shadow-slate-300/50 transition active:scale-[0.98]"
+                  >
+                    Batal
                   </button>
                 </div>
               </form>
@@ -1885,89 +1744,75 @@ export function ProfilPageContent({
         ) : null}
 
         {isPasswordModalOpen ? (
-          <div className="profile-modal-backdrop fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/50 px-4 pb-4 md:items-center md:pb-0">
-            <div className="profile-modal-panel max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl shadow-slate-950/30 md:p-7">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
-                    Keamanan Akun
-                  </p>
+          <div className="profile-modal-backdrop fixed inset-0 z-[80] overflow-y-auto bg-[#f4f8ff]">
+            <div className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-5 pb-10 pt-6">
+              <FigmaHeader
+                title="UBAH KATA SANDI"
+                subtitle="keamanan akun"
+                onBack={closePasswordModal}
+              />
 
-                  <h2 className="mt-2 text-2xl font-black text-slate-950">
-                    Ubah Kata Sandi
-                  </h2>
+              <form
+                onSubmit={handleChangePassword}
+                className="mt-10 flex flex-1 flex-col px-3"
+              >
+                <div className="space-y-4">
+                  <PasswordInput
+                    label="Kata sandi Lama"
+                    value={passwordForm.current_password}
+                    placeholder="Masukkan kata sandi lama"
+                    show={showCurrentPassword}
+                    onToggleShow={() => setShowCurrentPassword((prev) => !prev)}
+                    onChange={(value) =>
+                      setPasswordForm((prev) => ({
+                        ...prev,
+                        current_password: value,
+                      }))
+                    }
+                  />
+
+                  <PasswordInput
+                    label="Kata sandi Baru"
+                    value={passwordForm.new_password}
+                    placeholder="Minimal 8 karakter"
+                    show={showNewPassword}
+                    onToggleShow={() => setShowNewPassword((prev) => !prev)}
+                    onChange={(value) =>
+                      setPasswordForm((prev) => ({
+                        ...prev,
+                        new_password: value,
+                      }))
+                    }
+                  />
+
+                  <PasswordInput
+                    label="Konfirmasi Kata sandi Baru"
+                    value={passwordForm.confirm_password}
+                    placeholder="Ulangi masukkan kata sandi baru"
+                    show={showConfirmPassword}
+                    onToggleShow={() => setShowConfirmPassword((prev) => !prev)}
+                    onChange={(value) =>
+                      setPasswordForm((prev) => ({
+                        ...prev,
+                        confirm_password: value,
+                      }))
+                    }
+                  />
                 </div>
 
-                <button
-                  type="button"
-                  onClick={closePasswordModal}
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700 active:scale-[0.96]"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              <form onSubmit={handleChangePassword} className="mt-6 space-y-4">
-                <PasswordInput
-                  label="Kata Sandi Lama"
-                  value={passwordForm.current_password}
-                  placeholder="Masukkan kata sandi lama"
-                  show={showCurrentPassword}
-                  onToggleShow={() => setShowCurrentPassword((prev) => !prev)}
-                  onChange={(value) =>
-                    setPasswordForm((prev) => ({
-                      ...prev,
-                      current_password: value,
-                    }))
-                  }
-                />
-
-                <PasswordInput
-                  label="Kata Sandi Baru"
-                  value={passwordForm.new_password}
-                  placeholder="Minimal 8 karakter"
-                  show={showNewPassword}
-                  onToggleShow={() => setShowNewPassword((prev) => !prev)}
-                  onChange={(value) =>
-                    setPasswordForm((prev) => ({
-                      ...prev,
-                      new_password: value,
-                    }))
-                  }
-                />
-
-                <PasswordInput
-                  label="Konfirmasi Kata Sandi Baru"
-                  value={passwordForm.confirm_password}
-                  placeholder="Ulangi kata sandi baru"
-                  show={showConfirmPassword}
-                  onToggleShow={() => setShowConfirmPassword((prev) => !prev)}
-                  onChange={(value) =>
-                    setPasswordForm((prev) => ({
-                      ...prev,
-                      confirm_password: value,
-                    }))
-                  }
-                />
-
-                <div className="profile-row-enter rounded-2xl border border-blue-100 bg-[#f8fbff] p-4 text-xs font-semibold leading-6 text-slate-500">
-                  Setelah kata sandi berhasil diubah, gunakan kata sandi baru
-                  untuk login berikutnya.
+                <div className="profile-row-enter mt-7 flex items-start gap-2 rounded-xl bg-[#dce7fb] px-4 py-4 text-sm font-medium leading-5 text-[#0a55d8]">
+                  <Info size={16} className="mt-0.5 shrink-0" />
+                  <span>
+                    Setelah kata sandi berhasil diubah, gunakan kata sandi baru
+                    untuk login berikutnya.
+                  </span>
                 </div>
 
-                <div className="profile-row-enter flex flex-col-reverse gap-3 pt-2 md:flex-row md:justify-end">
-                  <button
-                    type="button"
-                    onClick={closePasswordModal}
-                    className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-black text-slate-600 transition hover:bg-slate-200 active:scale-[0.98]"
-                  >
-                    Batal
-                  </button>
-
+                <div className="mt-auto pt-10">
                   <button
                     type="submit"
                     disabled={isChangingPassword}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0f3274] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                    className={figmaButton}
                   >
                     {isChangingPassword ? (
                       <>
@@ -1975,10 +1820,7 @@ export function ProfilPageContent({
                         Menyimpan...
                       </>
                     ) : (
-                      <>
-                        <LockKeyhole size={18} />
-                        Simpan Kata Sandi
-                      </>
+                      "Simpan Kata Sandi"
                     )}
                   </button>
                 </div>

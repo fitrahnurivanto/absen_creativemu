@@ -4,29 +4,34 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   AlertCircle,
   BriefcaseBusiness,
+  ChevronDown,
   Camera,
   CameraOff,
   CheckCircle2,
   Clock3,
-  ImageUp,
   Loader2,
-  LogIn,
-  LogOut,
   MapPin,
   RefreshCw,
-  ScanFace,
   Settings,
   ShieldCheck,
   X,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
+import AttendanceSuccess, {
+  type AttendanceSuccessInfo,
+} from "@/components/employee/AttendanceSuccess";
+import {
+  GradientButton,
+  OutlineButton,
+} from "@/components/employee/EmployeeUI";
+import { useLiveGps } from "@/hooks/useLiveGps";
+import { inter } from "@/lib/inter-font";
 import MobileShell from "@/components/MobileShell";
 import {
   AppButton,
   AppCard,
   AppInput,
-  AppSelect,
   AppTextarea,
 } from "@/components/ui/AppUI";
 
@@ -799,84 +804,21 @@ function AttendanceMotionStyles() {
   );
 }
 
-function CameraStatusIcon({
-  cameraReady,
-  cameraStarting,
-  laptopBlocked,
-}: {
-  cameraReady: boolean;
-  cameraStarting: boolean;
-  laptopBlocked: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "attendance-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl shadow-lg shadow-blue-100/50 ring-1",
-        laptopBlocked && "bg-orange-50 text-orange-600 ring-orange-100",
-        !laptopBlocked &&
-          cameraReady &&
-          "bg-[#123c8c] text-white ring-[#123c8c]",
-        !laptopBlocked &&
-          cameraStarting &&
-          "bg-amber-50 text-amber-700 ring-amber-100",
-        !laptopBlocked &&
-          !cameraReady &&
-          !cameraStarting &&
-          "bg-white text-slate-400 ring-blue-100",
-      )}
-    >
-      {cameraStarting ? (
-        <Loader2 size={23} className="animate-spin" />
-      ) : laptopBlocked ? (
-        <AlertCircle size={24} strokeWidth={2.5} />
-      ) : (
-        <ScanFace size={24} strokeWidth={2.5} />
-      )}
-    </div>
-  );
-}
-
-function StatusPill({
-  cameraReady,
-  cameraStarting,
-  laptopBlocked,
-}: {
-  cameraReady: boolean;
-  cameraStarting: boolean;
-  laptopBlocked: boolean;
-}) {
-  return (
-    <span
-      className={cn(
-        "attendance-row-enter rounded-full px-4 py-2 text-xs font-black",
-        laptopBlocked && "bg-orange-50 text-orange-700",
-        !laptopBlocked && cameraReady && "bg-emerald-50 text-emerald-700",
-        !laptopBlocked && cameraStarting && "bg-amber-50 text-amber-700",
-        !laptopBlocked &&
-          !cameraReady &&
-          !cameraStarting &&
-          "bg-slate-100 text-slate-500",
-      )}
-    >
-      {laptopBlocked
-        ? "Mobile Only"
-        : cameraReady
-          ? "Kamera Aktif"
-          : cameraStarting
-            ? "Starting..."
-            : "Kamera Mati"}
-    </span>
-  );
-}
-
 function PhotoFrameOverlay() {
+  const arm = "absolute h-11 w-11 border-white";
+
   return (
     <div className="pointer-events-none absolute inset-0 z-20">
-      <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/18 via-white/5 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-950/20 via-slate-950/5 to-transparent" />
+      <div className="absolute left-[19.5%] top-[36%] h-[46%] w-[61%]">
+        <span className={`${arm} left-0 top-0 rounded-tl-[26px] border-l-[5px] border-t-[5px]`} />
+        <span className={`${arm} right-0 top-0 rounded-tr-[26px] border-r-[5px] border-t-[5px]`} />
+        <span className={`${arm} bottom-0 left-0 rounded-bl-[26px] border-b-[5px] border-l-[5px]`} />
+        <span className={`${arm} bottom-0 right-0 rounded-br-[26px] border-b-[5px] border-r-[5px]`} />
+      </div>
     </div>
   );
 }
+
 function CameraEmptyState({
   cameraStarting,
   permissionDenied,
@@ -984,98 +926,6 @@ function CameraPermissionGuide({ guide }: { guide: BrowserGuide }) {
   );
 }
 
-function ActionButton({
-  label,
-  subtitle,
-  icon,
-  loading,
-  disabled,
-  primary = false,
-  onClick,
-}: {
-  label: string;
-  subtitle: string;
-  icon: ReactNode;
-  loading: boolean;
-  disabled: boolean;
-  primary?: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <AppButton
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      variant={primary ? "primary" : "secondary"}
-      className={cn(
-        "min-h-[3.25rem] py-2 rounded-2xl px-2.5 shadow-lg transition hover:-translate-y-0.5 active:scale-[0.98] sm:min-h-[4rem] md:min-h-[70px] md:rounded-2xl md:px-5",
-        disabled
-          ? "border border-slate-200 bg-slate-200 text-slate-400 shadow-none hover:translate-y-0"
-          : primary
-            ? "bg-[#123c8c] text-white shadow-blue-900/25"
-            : "border border-blue-200 bg-white text-[#123c8c] shadow-slate-200/70 md:bg-[#f8fbff]",
-      )}
-    >
-      <span className="flex w-full items-center justify-center gap-1.5 sm:gap-2 md:gap-3">
-        {loading ? (
-          <Loader2 size={20} className="animate-spin" />
-        ) : (
-          <span
-            className={cn(
-              "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl sm:h-10 sm:w-10 sm:rounded-2xl",
-              disabled
-                ? "bg-slate-300/70"
-                : primary
-                  ? "bg-white/15"
-                  : "bg-blue-50",
-            )}
-          >
-            {icon}
-          </span>
-        )}
-
-        <span className="text-left">
-          <span
-            className={cn(
-              "block text-[8px] font-black uppercase tracking-[0.14em] sm:text-[9px] md:text-[11px] md:tracking-[0.22em]",
-              disabled
-                ? "text-slate-400"
-                : primary
-                  ? "text-blue-100"
-                  : "text-slate-400",
-            )}
-          >
-            {subtitle}
-          </span>
-
-          <span className="block text-sm font-black sm:text-base md:text-lg">
-            {loading ? "Proses..." : label}
-          </span>
-        </span>
-      </span>
-    </AppButton>
-  );
-}
-
-function LastPhoto({ url }: { url: string | null }) {
-  if (!url) return null;
-
-  return (
-    <div className="attendance-row-enter mt-5 hidden rounded-3xl border border-blue-100 bg-[#f6f8ff] p-4 md:block">
-      <div className="mb-3 flex items-center gap-2">
-        <ImageUp size={18} className="text-[#123c8c]" />
-        <p className="text-sm font-black text-slate-950">Foto Terakhir</p>
-      </div>
-
-      <img
-        src={url}
-        alt="Last presensi capture"
-        className="h-36 w-36 rounded-2xl object-cover shadow-md"
-      />
-    </div>
-  );
-}
-
 function ProofCard({
   cameraReady,
   workMode,
@@ -1131,6 +981,42 @@ function InfoTile({
   );
 }
 
+function useJakartaClock() {
+  const [clock, setClock] = useState({ time: "--:--:--", date: "" });
+
+  useEffect(() => {
+    const timeFormat = new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Asia/Jakarta",
+      hourCycle: "h23",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    const dateFormat = new Intl.DateTimeFormat("id-ID", {
+      timeZone: "Asia/Jakarta",
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+
+    function tick() {
+      const now = new Date();
+      setClock({ time: timeFormat.format(now), date: dateFormat.format(now) });
+    }
+
+    const first = window.setTimeout(tick, 0);
+    const timer = window.setInterval(tick, 1000);
+
+    return () => {
+      window.clearTimeout(first);
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  return clock;
+}
+
 function WorkModeFilter({
   value,
   disabled,
@@ -1157,37 +1043,54 @@ function WorkModeFilter({
   const shouldDisableVisitOption = !isModeAllowed("visit");
 
   return (
-    <div className="attendance-row-enter grid grid-cols-[1fr_auto] items-center gap-2 rounded-[1.2rem] border border-blue-100 bg-[#f8fbff] p-2 sm:p-3">
-      <AppSelect
-        label="Mode Presensi"
-        value={value}
-        onChange={(event) => onChange(event.target.value as WorkMode)}
-        disabled={disabled}
+    <div className="rounded-[14px] border border-[#cfd8ea] bg-white p-3">
+      <label
+        htmlFor="work-mode-select"
+        className="block text-[13px] font-medium text-black"
       >
-        <option value="office" disabled={shouldDisableOfficeOption}>
-          Kantor
-        </option>
-        <option value="wfh" disabled={shouldDisableWfhOption}>
-          {shouldDisableWfhOption ? "WFH - kuota habis" : "WFH"}
-        </option>
-        <option value="visit" disabled={shouldDisableVisitOption}>
-          Kunjungan
-        </option>
-      </AppSelect>
+        Mode Presensi
+      </label>
 
-      {value === "visit" && isVisitDataRequired ? (
-        <button
-          type="button"
-          onClick={onOpenVisit}
-          disabled={disabled}
-          className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-orange-600 ring-1 ring-orange-100 transition hover:bg-orange-100 active:scale-95 disabled:opacity-60 sm:h-12 sm:w-12 sm:rounded-2xl"
-          aria-label="Isi data kunjungan"
-        >
-          <BriefcaseBusiness size={19} strokeWidth={2.7} />
-        </button>
-      ) : null}
+      <div className="mt-1.5 flex items-center gap-2">
+        <div className="relative min-w-0 flex-1">
+          <select
+            id="work-mode-select"
+            value={value}
+            disabled={disabled}
+            onChange={(event) => onChange(event.target.value as WorkMode)}
+            className="h-[52px] w-full cursor-pointer appearance-none rounded-[10px] border border-[#cfd8f5] bg-[#eef2fd] pl-4 pr-11 text-[17px] text-[#5b5b60] outline-none focus:border-[#2468e4] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <option value="office" disabled={shouldDisableOfficeOption}>
+              Kantor
+            </option>
+            <option value="wfh" disabled={shouldDisableWfhOption}>
+              {shouldDisableWfhOption ? "WFH - kuota habis" : "WFH"}
+            </option>
+            <option value="visit" disabled={shouldDisableVisitOption}>
+              Kunjungan
+            </option>
+          </select>
 
-      <p className="col-span-2 hidden text-xs font-semibold leading-5 text-slate-500 sm:block">
+          <ChevronDown
+            size={22}
+            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-black"
+          />
+        </div>
+
+        {value === "visit" && isVisitDataRequired ? (
+          <button
+            type="button"
+            onClick={onOpenVisit}
+            disabled={disabled}
+            className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-[10px] bg-orange-50 text-orange-600 ring-1 ring-orange-100 transition hover:bg-orange-100 active:scale-95 disabled:opacity-60"
+            aria-label="Isi data kunjungan"
+          >
+            <BriefcaseBusiness size={20} strokeWidth={2.5} />
+          </button>
+        ) : null}
+      </div>
+
+      <p className="mt-2 text-[12px] leading-5 text-[#6b6b6b]">
         {value === "wfh" && wfhQuotaRemaining !== null
           ? `${getWorkModeDescription(value)} Sisa kuota bulan ini ${wfhQuotaRemaining}.`
           : getWorkModeDescription(value)}
@@ -1882,6 +1785,7 @@ export default function AttendancePage() {
     useState(false);
 
   const [isLaptopBlocked, setIsLaptopBlocked] = useState(false);
+  const gps = useLiveGps(!isLaptopBlocked);
 
   const [workMode, setWorkMode] = useState<WorkMode>("office");
   const workModeRef = useRef<WorkMode>("office");
@@ -1894,7 +1798,7 @@ export default function AttendancePage() {
   const [cameraDeniedAttempts, setCameraDeniedAttempts] = useState(0);
   const [isCameraOffByUser, setIsCameraOffByUser] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeAction, setActiveAction] = useState<AttendanceAction | null>(
+  const [, setActiveAction] = useState<AttendanceAction | null>(
     null,
   );
 
@@ -1902,6 +1806,13 @@ export default function AttendancePage() {
   const [lastLatitude, setLastLatitude] = useState<number | null>(null);
   const [lastLongitude, setLastLongitude] = useState<number | null>(null);
   const [lastAccuracy, setLastAccuracy] = useState<number | null>(null);
+  const capturedFileRef = useRef<File | null>(null);
+  const [hasCapturedPhoto, setHasCapturedPhoto] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [successInfo, setSuccessInfo] = useState<AttendanceSuccessInfo | null>(
+    null,
+  );
+  const clock = useJakartaClock();
 
   const [lateReason, setLateReason] = useState("");
   const [isLateReasonOpen, setIsLateReasonOpen] = useState(false);
@@ -2619,6 +2530,55 @@ export default function AttendancePage() {
     });
   }
 
+  async function handleTakePhoto() {
+    if (isLaptopBlocked) {
+      showLaptopBlockedAlert();
+      return;
+    }
+
+    if (leaveBlockRef.current?.active) {
+      showLeaveBlockedAlert();
+      return;
+    }
+
+    try {
+      setIsCapturing(true);
+
+      if (!streamRef.current || !cameraReady) await startCamera();
+
+      const video = await waitForVideoElement();
+
+      if (!streamRef.current) throw new Error("Kamera belum siap.");
+
+      await waitForCameraFrame(video);
+
+      capturedFileRef.current = await capturePhoto();
+      setHasCapturedPhoto(true);
+    } catch (error) {
+      const message = isPermissionDeniedError(error)
+        ? "Izin kamera ditolak. Aktifkan izin kamera di browser terlebih dahulu."
+        : error instanceof Error
+          ? error.message
+          : "Gagal mengambil foto.";
+
+      showCustomAlert("Foto gagal diambil", message, "warning");
+    } finally {
+      setIsCapturing(false);
+    }
+  }
+
+  function handleRetakePhoto() {
+    capturedFileRef.current = null;
+    setHasCapturedPhoto(false);
+
+    if (lastPhotoUrlRef.current) {
+      URL.revokeObjectURL(lastPhotoUrlRef.current);
+      lastPhotoUrlRef.current = null;
+    }
+
+    setLastPhotoUrl(null);
+  }
+
   async function requestCheckIn() {
     const selectedWorkMode = workModeRef.current;
 
@@ -2836,12 +2796,12 @@ export default function AttendancePage() {
 
     safeSetStatus(
       "Alasan Siap Dikirim",
-      "Alasan keterlambatan sudah tersimpan sementara. Silakan tekan tombol Check-in untuk mengirim presensi.",
+      "Alasan keterlambatan sudah tersimpan sementara. Silakan tekan tombol Presensi Masuk untuk mengirim presensi.",
     );
 
     showCustomAlert(
       "Alasan siap dikirim",
-      "Alasan keterlambatan sudah tersimpan. Silakan tekan tombol Check-in untuk melanjutkan presensi.",
+      "Alasan keterlambatan sudah tersimpan. Silakan tekan tombol Presensi Masuk untuk melanjutkan presensi.",
       "success",
     );
   }
@@ -2896,15 +2856,20 @@ export default function AttendancePage() {
         "Menyiapkan kamera, mengambil foto, dan lokasi GPS...",
       );
 
-      if (!streamRef.current || !cameraReady) await startCamera();
+      let photo = capturedFileRef.current;
 
-      const video = await waitForVideoElement();
+      if (!photo) {
+        if (!streamRef.current || !cameraReady) await startCamera();
 
-      if (!streamRef.current) throw new Error("Kamera belum siap.");
+        const video = await waitForVideoElement();
 
-      await waitForCameraFrame(video);
+        if (!streamRef.current) throw new Error("Kamera belum siap.");
 
-      const photo = await capturePhoto();
+        await waitForCameraFrame(video);
+
+        photo = await capturePhoto();
+      }
+
       const position = await getCurrentLocation();
       const { latitude, longitude, accuracy } = position.coords;
 
@@ -3032,13 +2997,41 @@ export default function AttendancePage() {
 
       await loadTodayAttendance();
 
-      showCustomAlert(
-        action === "check-in" ? "Check-in berhasil" : "Check-out berhasil",
-        action === "check-in"
-          ? `${data.message || "Presensi berhasil."} Mode: ${modeLabel}.`
-          : data.message || "Presensi berhasil.",
-        "success",
-      );
+      const finishedAt = new Date();
+      const finishedTime = new Intl.DateTimeFormat("id-ID", {
+        timeZone: "Asia/Jakarta",
+        hourCycle: "h23",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+        .format(finishedAt)
+        .replace(".", ":");
+      const finishedDate = new Intl.DateTimeFormat("id-ID", {
+        timeZone: "Asia/Jakarta",
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(finishedAt);
+
+      capturedFileRef.current = null;
+      setHasCapturedPhoto(false);
+      releaseCamera(false, true);
+
+      setSuccessInfo({
+        action,
+        dateLabel: finishedDate,
+        timeLabel: `${finishedTime} WIB`,
+        locationLabel: modeLabel,
+        statusLabel:
+          selectedWorkMode === "visit"
+            ? "Kunjungan"
+            : reason.trim()
+              ? action === "check-in"
+                ? "Terlambat"
+                : "Pulang Lebih Awal"
+              : "Tepat Waktu",
+      });
     } catch (error) {
       const message = isPermissionDeniedError(error)
         ? "Izin kamera atau lokasi ditolak. Aktifkan izin kamera dan GPS di browser terlebih dahulu."
@@ -3061,8 +3054,45 @@ export default function AttendancePage() {
     }
   }
 
-  const checkInProcessing = loading && activeAction === "check-in";
-  const checkOutProcessing = loading && activeAction === "check-out";
+  const primaryAction: AttendanceAction | null = !hasCheckedInToday
+    ? "check-in"
+    : !hasCheckedOutToday
+      ? "check-out"
+      : null;
+  const modeLabelText = getWorkModeLabel(workMode);
+  const locationLine =
+    workMode !== "office"
+      ? `${modeLabelText} : lokasi dicatat saat presensi`
+      : gps.status === "denied"
+        ? "Izin lokasi ditolak"
+        : gps.status === "unavailable"
+          ? "Lokasi tidak tersedia"
+          : gps.distance !== null
+            ? `${modeLabelText} : ${gps.distance} Meter dari lokasi terdaftar`
+            : gps.hasPosition
+              ? "Di luar radius kantor"
+              : "Mencari lokasi...";
+  const previewStatus =
+    primaryAction === "check-out"
+      ? "Presensi Pulang"
+      : workMode !== "visit" && isLateCheckInNow(currentUser)
+        ? "Terlambat"
+        : "Hadir Tepat Waktu";
+  const photoActionBusy =
+    loading ||
+    isCapturing ||
+    isLaptopBlocked ||
+    isLeaveBlocked ||
+    isUserLoading ||
+    isTodayAttendanceLoading;
+
+  if (successInfo) {
+    return (
+      <MobileShell variant="employee" withBottomPadding={false}>
+        <AttendanceSuccess info={successInfo} />
+      </MobileShell>
+    );
+  }
 
   return (
     <MobileShell variant="employee" withBottomPadding={false}>
@@ -3082,219 +3112,190 @@ export default function AttendancePage() {
         />
       </div>
 
-      <main className="relative min-h-dvh overflow-x-hidden bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff] pb-[calc(7.5rem+env(safe-area-inset-bottom,0px))] text-slate-950 md:min-h-dvh md:pb-28">
-        <section className="attendance-enter mx-auto w-full max-w-7xl px-5 pt-4 md:hidden">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-[#123c8c]">
-                Presensi
-              </p>
-
-              <h1 className="mt-1 text-2xl font-black tracking-tight text-[#073456]">
-                Presensi Wajah
-              </h1>
-
-              <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-slate-500">
-                <span>Mode: {getWorkModeLabel(workMode)}</span>
-                {currentUser?.shift?.start_time && (
-                  <>
-                    <span>•</span>
-                    <span className="text-[#123c8c]">
-                      Jam: {currentUser.shift.start_time}-{currentUser.shift.end_time || "17:00"}
+      <main className={`${inter.className} relative min-h-dvh overflow-x-hidden bg-[#f4f8ff] pb-[calc(7.5rem+env(safe-area-inset-bottom,0px))] text-slate-950 md:min-h-dvh md:bg-gradient-to-br md:from-[#f6f8ff] md:via-white md:to-[#eef4ff] md:pb-28`}>
+        <section className="relative z-10 mx-auto grid w-full max-w-7xl gap-3 px-[14px] pt-[calc(1.25rem+env(safe-area-inset-top,0px))] md:px-10 md:py-8 lg:grid-cols-[1.05fr_0.95fr] lg:px-16">
+          <div className="mx-auto w-full max-w-[430px] space-y-4 md:max-w-none">
+            {/* Jam, tanggal, lokasi, mode */}
+            <div className="rounded-[14px] border border-[#dfe5f2] bg-white p-3.5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="flex items-baseline gap-1.5 text-[#2468e4]">
+                    <span className="text-[34px] font-bold leading-none tabular-nums">
+                      {hasCapturedPhoto ? clock.time.slice(0, 5) : clock.time}
                     </span>
-                    <span>•</span>
-                    <span className="text-[#123c8c]">
-                      Tol: {currentUser.shift.tolerance_minutes ?? 5}m
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
+                    <span className="text-[13px] font-bold">WIB</span>
+                  </p>
+                  <p className="mt-1.5 text-[16px]">{clock.date || "Memuat tanggal..."}</p>
+                </div>
 
-            <CameraStatusIcon
-              cameraReady={cameraReady}
-              cameraStarting={cameraStarting}
-              laptopBlocked={isLaptopBlocked}
-            />
-          </div>
-        </section>
+                <div className="flex shrink-0 flex-col items-end gap-2 text-right">
+                  {hasCapturedPhoto ? (
+                    <p className="flex max-w-[190px] items-center gap-1 text-[12px] leading-tight text-[#8e8e93]">
+                      <MapPin size={13} fill="currentColor" className="shrink-0" />
+                      <span>{locationLine}</span>
+                    </p>
+                  ) : null}
 
-        <section className="relative z-10 mx-auto grid w-full max-w-7xl gap-3 px-5 pt-3 md:px-10 md:py-8 lg:grid-cols-[1.05fr_0.95fr] lg:px-16">
-          <AppCard
-            padding="md"
-            className="attendance-card-enter flex flex-col rounded-[2rem] border-white/80 bg-white/95 p-3 shadow-2xl shadow-slate-300/30 backdrop-blur-xl md:p-6"
-          >
-            <div className="attendance-row-enter mb-4 hidden items-start justify-between gap-4 md:flex">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]">
-                  Camera
-                </p>
-
-                <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">
-                  Ambil Presensi
-                </h2>
-
-
+                  <span className="rounded-full bg-[#5b86eb] px-3 py-1.5 text-[12px] font-medium text-white">
+                    {hasCapturedPhoto ? previewStatus : modeLabelText}
+                  </span>
+                </div>
               </div>
 
-              <StatusPill
-                cameraReady={cameraReady}
-                cameraStarting={cameraStarting}
-                laptopBlocked={isLaptopBlocked}
-              />
+              {!hasCapturedPhoto ? (
+                <>
+                  <p className="mt-2 flex items-center gap-1.5 text-[12px] text-[#8e8e93]">
+                    <MapPin size={13} fill="currentColor" className="shrink-0" />
+                    {locationLine}
+                  </p>
+
+                  <div className="mt-3">
+                    <WorkModeFilter
+                      value={workMode}
+                      disabled={
+                        loading ||
+                        isTodayAttendanceLoading ||
+                        hasCheckedOutToday ||
+                        (hasCheckedInToday &&
+                          !hasCheckedOutToday &&
+                          lockedWorkMode === "wfh")
+                      }
+                      allowedModes={allowedCheckOutModes}
+                      isVisitDataRequired={isVisitDataRequired}
+                      wfhQuotaRemaining={getWfhQuotaRemaining(currentUser)}
+                      onChange={handleWorkModeChange}
+                      onOpenVisit={() => {
+                        if (hasCheckedOutToday) {
+                          showCustomAlert(
+                            "Presensi hari ini sudah selesai",
+                            "Kamu sudah check-in dan check-out hari ini. Data kunjungan tidak bisa diubah lagi.",
+                            "warning",
+                          );
+
+                          return;
+                        }
+
+                        if (hasCheckedInToday) {
+                          if (lockedWorkMode !== "office") {
+                            showCustomAlert(
+                              "Data kunjungan tidak perlu diisi ulang",
+                              lockedWorkMode === "visit"
+                                ? "Kamu sudah mengisi data kunjungan saat check-in. Tekan Presensi Pulang untuk menyelesaikan kunjungan."
+                                : "Kamu check-in WFH, jadi check-out wajib WFH.",
+                              "warning",
+                            );
+
+                            return;
+                          }
+
+                          setSelectedWorkMode("visit");
+                          setIsVisitModalOpen(true);
+
+                          showCustomAlert(
+                            "Data kunjungan untuk check-out",
+                            "Kamu sudah check-in dari kantor. Isi data kunjungan jika ada aktivitas kunjungan di tengah pekerjaan, lalu tekan Presensi Pulang.",
+                            "warning",
+                          );
+
+                          safeSetStatus(
+                            "Kunjungan untuk Check-out",
+                            "Isi data kunjungan, lalu tekan tombol Presensi Pulang. Sistem tidak akan membuat check-in ulang.",
+                          );
+
+                          return;
+                        }
+
+                        setIsVisitModalOpen(true);
+                      }}
+                    />
+                  </div>
+                </>
+              ) : null}
             </div>
 
-            <WorkModeFilter
-              value={workMode}
-              disabled={
-                loading ||
-                isTodayAttendanceLoading ||
-                hasCheckedOutToday ||
-                (hasCheckedInToday &&
-                  !hasCheckedOutToday &&
-                  lockedWorkMode === "wfh")
-              }
-              allowedModes={allowedCheckOutModes}
-              isVisitDataRequired={isVisitDataRequired}
-              wfhQuotaRemaining={getWfhQuotaRemaining(currentUser)}
-              onChange={handleWorkModeChange}
-              onOpenVisit={() => {
-                if (hasCheckedOutToday) {
-                  showCustomAlert(
-                    "Presensi hari ini sudah selesai",
-                    "Kamu sudah check-in dan check-out hari ini. Data kunjungan tidak bisa diubah lagi.",
-                    "warning",
-                  );
-
-                  return;
-                }
-
-                if (hasCheckedInToday) {
-                  if (lockedWorkMode !== "office") {
-                    showCustomAlert(
-                      "Data kunjungan tidak perlu diisi ulang",
-                      lockedWorkMode === "visit"
-                        ? "Kamu sudah mengisi data kunjungan saat check-in. Tekan Check-out untuk menyelesaikan kunjungan."
-                        : "Kamu check-in WFH, jadi check-out wajib WFH.",
-                      "warning",
-                    );
-
-                    return;
-                  }
-
-                  setSelectedWorkMode("visit");
-                  setIsVisitModalOpen(true);
-
-                  showCustomAlert(
-                    "Data kunjungan untuk check-out",
-                    lockedWorkMode === "office"
-                      ? "Kamu sudah check-in dari kantor. Isi data kunjungan jika ada aktivitas kunjungan di tengah pekerjaan, lalu tekan Check-out."
-                      : `Kamu sudah check-in dengan mode ${getWorkModeLabel(
-                          lockedWorkMode,
-                        )}. Data kunjungan akan dikirim saat Check-out.`,
-                    "warning",
-                  );
-
-                  safeSetStatus(
-                    "Kunjungan untuk Check-out",
-                    "Isi data kunjungan, lalu tekan tombol Check-out. Sistem tidak akan membuat check-in ulang.",
-                  );
-
-                  return;
-                }
-
-                setIsVisitModalOpen(true);
-              }}
-            />
-
-            {hasCheckedInToday ? (
-              <div className="attendance-row-enter mt-3 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-xs font-bold leading-5 text-amber-700">
+            {hasCheckedInToday && !hasCapturedPhoto ? (
+              <div className="rounded-2xl border border-amber-100 bg-amber-50 p-3.5 text-xs font-semibold leading-5 text-amber-700">
                 {hasCheckedOutToday
                   ? `Presensi hari ini sudah selesai dengan mode ${getWorkModeLabel(
                       lockedWorkMode,
-                    )}. Mode attendance tidak bisa diubah lagi.`
+                    )}. Mode presensi tidak bisa diubah lagi.`
                   : lockedWorkMode === "wfh"
-                    ? "Check-in sudah masuk dengan mode WFH. Check-out dikunci WFH supaya kuota tidak berubah karena pilihan mode lain."
+                    ? "Check-in sudah masuk dengan mode WFH. Presensi pulang dikunci WFH supaya kuota tidak berubah."
                     : lockedWorkMode === "office"
-                      ? "Check-in sudah masuk dengan mode Kantor. Check-out bisa Kantor atau Kunjungan."
-                      : "Check-in sudah masuk dengan mode Kunjungan. Check-out bisa Kunjungan atau Kantor, tanpa isi ulang data kunjungan."}
+                      ? "Check-in sudah masuk dengan mode Kantor. Presensi pulang bisa Kantor atau Kunjungan."
+                      : "Check-in sudah masuk dengan mode Kunjungan. Presensi pulang bisa Kunjungan atau Kantor, tanpa isi ulang data kunjungan."}
               </div>
             ) : null}
 
-            <div className="attendance-camera-enter mt-2 overflow-hidden rounded-2xl bg-slate-950 shadow-[0_12px_30px_rgba(15,23,42,0.15)]">
-              <div className="relative overflow-hidden bg-slate-950 shadow-inner">
-                <div className="relative h-[42dvh] min-h-[250px] max-h-[380px] sm:h-[45dvh] sm:min-h-[280px] sm:max-h-[440px] md:h-auto md:aspect-[16/10] md:min-h-0 md:max-h-none lg:aspect-[16/10]">
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    onLoadedMetadata={() => {
-                      const video = videoRef.current;
+            {/* Kamera / hasil foto */}
+            <div
+              className={cn(
+                "bg-white shadow-[0_2px_10px_rgba(36,70,150,0.08)]",
+                hasCapturedPhoto ? "rounded-[28px] p-0" : "rounded-[30px] p-2",
+              )}
+            >
+              <div className="relative aspect-[4/5] max-h-[62dvh] w-full overflow-hidden rounded-[22px] bg-slate-950 md:max-h-[70dvh]">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  onLoadedMetadata={() => {
+                    const video = videoRef.current;
 
-                      if (
-                        video &&
-                        video.readyState >= 2 &&
-                        video.videoWidth > 0 &&
-                        video.videoHeight > 0
-                      ) {
-                        setCameraReady(true);
-                        setCameraStarting(false);
-                      }
-                    }}
-                    onCanPlay={() => {
-                      const video = videoRef.current;
+                    if (
+                      video &&
+                      video.readyState >= 2 &&
+                      video.videoWidth > 0 &&
+                      video.videoHeight > 0
+                    ) {
+                      setCameraReady(true);
+                      setCameraStarting(false);
+                    }
+                  }}
+                  onCanPlay={() => {
+                    const video = videoRef.current;
 
-                      if (
-                        video &&
-                        video.readyState >= 2 &&
-                        video.videoWidth > 0 &&
-                        video.videoHeight > 0
-                      ) {
-                        setCameraReady(true);
-                        setCameraStarting(false);
-                      }
-                    }}
-                    className={cn(
-                      "h-full w-full object-cover transition scale-x-[-1]",
-                      cameraReady ? "opacity-100" : "opacity-0",
-                    )}
+                    if (
+                      video &&
+                      video.readyState >= 2 &&
+                      video.videoWidth > 0 &&
+                      video.videoHeight > 0
+                    ) {
+                      setCameraReady(true);
+                      setCameraStarting(false);
+                    }
+                  }}
+                  className={cn(
+                    "h-full w-full object-cover transition scale-x-[-1]",
+                    cameraReady ? "opacity-100" : "opacity-0",
+                  )}
+                />
+
+                {hasCapturedPhoto && lastPhotoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={lastPhotoUrl}
+                    alt="Foto presensi"
+                    className="absolute inset-0 z-10 h-full w-full object-cover"
                   />
+                ) : null}
 
-                  <PhotoFrameOverlay />
+                <PhotoFrameOverlay />
 
-                  {cameraReady ? (
-                    <div className="attendance-scan-line pointer-events-none absolute left-5 right-5 top-1/2 z-30 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" />
-                  ) : null}
-
-                  <div className="attendance-row-enter absolute left-4 top-4 z-30 rounded-full bg-slate-950/55 px-3 py-1.5 text-[11px] font-black text-white backdrop-blur-md md:left-5 md:top-5 md:text-xs">
-                    {isLaptopBlocked
-                      ? "Mobile Only"
-                      : isCameraOffByUser
-                        ? "Kamera Off"
-                        : cameraReady
-                          ? "Kamera Aktif"
-                          : cameraStarting
-                            ? "Starting..."
-                            : "Kamera Mati"}
-                  </div>
-
-                  <div className="absolute right-3 top-3 z-30 flex items-center gap-1.5 md:right-4 md:top-4">
+                {!hasCapturedPhoto ? (
+                  <div className="absolute right-3 top-3 z-30 flex items-center gap-1.5">
                     <button
                       type="button"
                       onClick={handleRefreshCamera}
                       disabled={cameraStarting || loading}
                       title="Muat Ulang Kamera"
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950/60 text-white backdrop-blur-md transition hover:bg-slate-900 active:scale-95 disabled:opacity-50"
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950/50 text-white backdrop-blur-md transition active:scale-95 disabled:opacity-50"
                       aria-label="Muat Ulang Kamera"
                     >
                       <RefreshCw
                         size={14}
-                        className={
-                          cameraStarting
-                            ? "animate-spin text-white"
-                            : "text-white"
-                        }
+                        className={cameraStarting ? "animate-spin" : ""}
                       />
                     </button>
 
@@ -3305,7 +3306,7 @@ export default function AttendancePage() {
                       title={
                         isCameraOffByUser ? "Nyalakan Kamera" : "Matikan Kamera"
                       }
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950/60 text-white backdrop-blur-md transition hover:bg-slate-900 active:scale-95 disabled:opacity-50"
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950/50 text-white backdrop-blur-md transition active:scale-95 disabled:opacity-50"
                       aria-label={
                         isCameraOffByUser ? "Nyalakan Kamera" : "Matikan Kamera"
                       }
@@ -3313,81 +3314,79 @@ export default function AttendancePage() {
                       {isCameraOffByUser ? (
                         <Camera size={14} className="text-[#ff8a00]" />
                       ) : (
-                        <CameraOff size={14} className="text-white" />
+                        <CameraOff size={14} />
                       )}
                     </button>
                   </div>
+                ) : null}
 
-                  <div className="attendance-row-enter absolute bottom-4 left-4 z-30 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-black text-[#123c8c] backdrop-blur-md">
-                    {getWorkModeLabel(workMode)}
-                  </div>
-
-                  {!cameraReady ? (
-                    <CameraEmptyState
-                      cameraStarting={cameraStarting}
-                      permissionDenied={cameraPermissionDenied}
-                      laptopBlocked={isLaptopBlocked}
-                      cameraOffByUser={isCameraOffByUser}
-                      deniedAttempts={cameraDeniedAttempts}
-                      onRetry={retryCameraPermission}
-                      onTurnOn={handleToggleCamera}
-                    />
-                  ) : null}
-                </div>
+                {!cameraReady && !hasCapturedPhoto ? (
+                  <CameraEmptyState
+                    cameraStarting={cameraStarting}
+                    permissionDenied={cameraPermissionDenied}
+                    laptopBlocked={isLaptopBlocked}
+                    cameraOffByUser={isCameraOffByUser}
+                    deniedAttempts={cameraDeniedAttempts}
+                    onRetry={retryCameraPermission}
+                    onTurnOn={handleToggleCamera}
+                  />
+                ) : null}
               </div>
             </div>
 
-            {browserGuide ? (
-              <CameraPermissionGuide guide={browserGuide} />
-            ) : null}
+            {browserGuide ? <CameraPermissionGuide guide={browserGuide} /> : null}
 
             <canvas ref={canvasRef} className="hidden" />
 
-            <div className="attendance-row-enter mt-3 grid grid-cols-2 gap-3">
-              <ActionButton
-                label={hasCheckedInToday ? "Sudah masuk" : "Check-in"}
-                subtitle="Masuk"
-                loading={checkInProcessing || isUserLoading}
-                disabled={
-                  loading ||
-                  cameraStarting ||
-                  isUserLoading ||
-                  isLaptopBlocked ||
-                  isLeaveBlocked ||
-                  hasCheckedInToday
-                }
-                primary={!hasCheckedInToday}
-                icon={<LogIn size={22} />}
-                onClick={requestCheckIn}
-              />
-
-              <ActionButton
-                label={hasCheckedOutToday ? "Sudah keluar" : "Check-out"}
-                subtitle="Keluar"
-                loading={checkOutProcessing}
-                disabled={
-                  loading ||
-                  cameraStarting ||
-                  isLaptopBlocked ||
-                  isLeaveBlocked ||
-                  !hasCheckedInToday ||
-                  hasCheckedOutToday
-                }
-                primary={hasCheckedInToday && !hasCheckedOutToday}
-                icon={<LogOut size={22} />}
-                onClick={requestCheckOut}
-              />
-            </div>
-
             {isLeaveBlocked ? (
-              <div className="attendance-row-enter mt-3 rounded-2xl border border-slate-200 bg-slate-100 p-4 text-xs font-bold leading-5 text-slate-600">
+              <div className="rounded-2xl border border-slate-200 bg-slate-100 p-4 text-xs font-semibold leading-5 text-slate-600">
                 {leaveBlock?.message ||
-                  "Kamu sedang dalam periode cuti/sakit/izin. Check-in dan check-out tidak dapat dilakukan."}
+                  "Kamu sedang dalam periode cuti/sakit/izin. Presensi tidak dapat dilakukan."}
               </div>
             ) : null}
 
-            <LastPhoto url={lastPhotoUrl} />
-          </AppCard>
+            {/* Tombol aksi */}
+            {primaryAction === null ? (
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-center text-sm font-semibold text-emerald-700">
+                Presensi hari ini sudah selesai.
+              </div>
+            ) : hasCapturedPhoto ? (
+              <div className="space-y-3">
+                <GradientButton
+                  type="button"
+                  tall
+                  disabled={photoActionBusy}
+                  onClick={
+                    primaryAction === "check-in" ? requestCheckIn : requestCheckOut
+                  }
+                >
+                  {loading
+                    ? "Memproses..."
+                    : primaryAction === "check-in"
+                      ? "Presensi Masuk"
+                      : "Presensi Pulang"}
+                </GradientButton>
+
+                <OutlineButton
+                  type="button"
+                  tall
+                  disabled={loading}
+                  onClick={handleRetakePhoto}
+                >
+                  Ulangi
+                </OutlineButton>
+              </div>
+            ) : (
+              <GradientButton
+                type="button"
+                tall
+                disabled={photoActionBusy || cameraStarting}
+                onClick={handleTakePhoto}
+              >
+                {isCapturing ? "Mengambil foto..." : "Ambil Foto"}
+              </GradientButton>
+            )}
+          </div>
 
           <div className="hidden space-y-5 md:block">
             <ProofCard cameraReady={cameraReady} workMode={workMode} />

@@ -5,22 +5,17 @@ import Link from "next/link";
 import {
   CalendarDays,
   ChevronRight,
-  Clock3,
   History,
+  Layers,
   Loader2,
-  Search,
-  TimerReset,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
+import { figmaGradient } from "@/components/ui/FigmaUI";
 import {
-  AppBadge,
-  AppButton,
-  AppCard,
   AppEmptyState,
   AppLoadingState,
-  AppSelect,
 } from "@/components/ui/AppUI";
 
 type AttendanceRecord = {
@@ -65,47 +60,20 @@ function formatDateLabel(date: string) {
     parsedDate,
   );
 
-  return `${weekday}, ${day} ${month}`;
-}
+  const year = new Intl.DateTimeFormat("id-ID", { year: "numeric" }).format(
+    parsedDate,
+  );
 
-function formatShortDate(date: string) {
-  return new Intl.DateTimeFormat("id-ID", {
-    day: "2-digit",
-    month: "short",
-  }).format(new Date(`${date}T00:00:00`));
+  return `${weekday}, ${day} ${month} ${year}`;
 }
 
 function formatWorkDuration(minutes: number) {
   if (!minutes || minutes <= 0) return "-";
 
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
+  const hours = String(Math.floor(minutes / 60)).padStart(2, "0");
+  const remainingMinutes = String(minutes % 60).padStart(2, "0");
 
-  if (hours > 0 && remainingMinutes > 0) {
-    return `${hours}j ${remainingMinutes}m`;
-  }
-
-  if (hours > 0) return `${hours}j`;
-
-  return `${remainingMinutes}m`;
-}
-
-function getStatusVariant(
-  status: string,
-): "green" | "yellow" | "red" | "gray" | "blue" {
-  const value = status.toLowerCase();
-
-  if (value.includes("terlambat")) return "yellow";
-  if (value.includes("cuti")) return "blue";
-  if (value.includes("sakit")) return "red";
-  if (value.includes("tidak")) return "red";
-  if (value.includes("pulang cepat")) return "yellow";
-
-  return "green";
-}
-
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(" ");
+  return `${hours}:${remainingMinutes}:00`;
 }
 
 function HistoryMotionStyles() {
@@ -206,28 +174,6 @@ function HeroBadge({
   );
 }
 
-function MobileHeader() {
-  return (
-    <section className="history-enter mx-auto max-w-7xl px-5 pt-7 md:hidden">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-black uppercase tracking-[0.28em] text-[#123c8c]">
-            Presensi
-          </p>
-
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-[#073456]">
-            Laporan Presensi
-          </h1>
-        </div>
-
-        <div className="history-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#123c8c] text-white ring-1 ring-[#123c8c]">
-          <History size={24} strokeWidth={2.6} />
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function DesktopHero({
   monthLabel,
   year,
@@ -274,36 +220,42 @@ function DesktopHero({
   );
 }
 
-function StatCard({
+const selectClass =
+  "h-11 w-full min-w-0 rounded-lg border border-[#b9bfc9] bg-white px-2 text-xs text-slate-600 outline-none transition focus:border-[#0559e0]";
+
+function StatTile({
+  icon: Icon,
+  iconClass,
   label,
   value,
-  large = false,
+  caption,
   delay = "0ms",
 }: {
+  icon: typeof Layers;
+  iconClass: string;
   label: string;
   value: ReactNode;
-  large?: boolean;
+  caption: string;
   delay?: string;
 }) {
   return (
-    <div className="history-row-enter" style={{ animationDelay: delay }}>
-      <AppCard
-        padding="sm"
-        className="rounded-3xl bg-[#f8fbff] shadow-none transition duration-200 hover:-translate-y-0.5 hover:bg-white hover:shadow-lg hover:shadow-slate-200/60"
+    <div
+      className="history-row-enter flex min-w-0 items-start gap-2 rounded-xl border border-[#dbe6f7] bg-white p-2.5 shadow-sm"
+      style={{ animationDelay: delay }}
+    >
+      <div
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${iconClass}`}
       >
-        <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
-          {label}
-        </p>
+        <Icon size={18} strokeWidth={2.2} />
+      </div>
 
-        <p
-          className={cn(
-            "mt-2 font-black text-slate-950",
-            large ? "truncate text-lg md:text-2xl" : "text-2xl",
-          )}
-        >
+      <div className="min-w-0">
+        <p className="truncate text-[10px] text-slate-500">{label}</p>
+        <p className="truncate text-base font-bold leading-5 text-[#111]">
           {value}
         </p>
-      </AppCard>
+        <p className="truncate text-[10px] text-slate-500">{caption}</p>
+      </div>
     </div>
   );
 }
@@ -311,104 +263,98 @@ function StatCard({
 function FilterCard({
   month,
   year,
-  sort,
-  monthLabel,
+  location,
+  status,
+  locationOptions,
+  statusOptions,
   isLoading,
   onMonthChange,
   onYearChange,
-  onSortChange,
+  onLocationChange,
+  onStatusChange,
   onApply,
 }: {
   month: number;
   year: number;
-  sort: "desc" | "asc";
-  monthLabel: string;
+  location: string;
+  status: string;
+  locationOptions: string[];
+  statusOptions: string[];
   isLoading: boolean;
   onMonthChange: (value: number) => void;
   onYearChange: (value: number) => void;
-  onSortChange: (value: "desc" | "asc") => void;
+  onLocationChange: (value: string) => void;
+  onStatusChange: (value: string) => void;
   onApply: () => void;
 }) {
   return (
-    <AppCard
-      padding="md"
-      className="history-enter rounded-[1.8rem] shadow-none md:p-6"
-    >
-      <div className="flex items-center gap-4">
-        <div className="history-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
-          <CalendarDays size={24} strokeWidth={2.6} />
-        </div>
-
-        <div className="min-w-0">
-          <p className="text-xs font-black uppercase tracking-[0.22em] text-[#123c8c]">
-            Filter Riwayat
-          </p>
-
-          <h2 className="mt-1 text-base font-black text-slate-950 md:text-lg">
-            {monthLabel} {year}
-          </h2>
-        </div>
-      </div>
-
-      <div className="mt-5 grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto]">
-        <div className="history-field">
-          <AppSelect
-            value={month}
-            onChange={(event) => onMonthChange(Number(event.target.value))}
-            className="!mt-0 h-13 md:h-14"
-          >
-            {months.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </AppSelect>
-        </div>
-
-        <div className="history-field">
-          <AppSelect
-            value={year}
-            onChange={(event) => onYearChange(Number(event.target.value))}
-            className="!mt-0 h-13 md:h-14"
-          >
-            {years.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </AppSelect>
-        </div>
-
-        <div className="history-field">
-          <AppSelect
-            value={sort}
-            onChange={(event) =>
-              onSortChange(event.target.value as "desc" | "asc")
-            }
-            className="!mt-0 h-13 md:h-14"
-          >
-            <option value="desc">Terbaru</option>
-            <option value="asc">Terlama</option>
-          </AppSelect>
-        </div>
-
-        <AppButton
-          type="button"
-          onClick={onApply}
-          disabled={isLoading}
-          className="h-13 md:h-14"
-          leftIcon={
-            isLoading ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <Search size={18} />
-            )
-          }
+    <div className="history-enter rounded-xl border border-[#dbe6f7] bg-white p-3 shadow-sm">
+      <div className="grid grid-cols-4 gap-2">
+        <select
+          value={month}
+          onChange={(event) => onMonthChange(Number(event.target.value))}
+          className={selectClass}
+          aria-label="Bulan"
         >
-          Terapkan
-        </AppButton>
+          {months.map((item) => (
+            <option key={item.value} value={item.value}>
+              {item.label}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={year}
+          onChange={(event) => onYearChange(Number(event.target.value))}
+          className={selectClass}
+          aria-label="Tahun"
+        >
+          {years.map((item) => (
+            <option key={item} value={item}>
+              {item}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={location}
+          onChange={(event) => onLocationChange(event.target.value)}
+          className={selectClass}
+          aria-label="Lokasi"
+        >
+          <option value="">Lokasi</option>
+          {locationOptions.map((item) => (
+            <option key={item} value={item}>
+              {item}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={status}
+          onChange={(event) => onStatusChange(event.target.value)}
+          className={selectClass}
+          aria-label="Status"
+        >
+          <option value="">Status</option>
+          {statusOptions.map((item) => (
+            <option key={item} value={item}>
+              {item}
+            </option>
+          ))}
+        </select>
       </div>
-    </AppCard>
+
+      <button
+        type="button"
+        onClick={onApply}
+        disabled={isLoading}
+        className={`mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-lg text-lg font-semibold transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 ${figmaGradient}`}
+      >
+        {isLoading ? <Loader2 size={18} className="animate-spin" /> : null}
+        Terapkan
+      </button>
+    </div>
   );
 }
 
@@ -419,77 +365,68 @@ function AttendanceRecordCard({
   item: AttendanceRecord;
   delay?: string;
 }) {
-  const shortDate = formatShortDate(item.date).split(" ");
-  const note =
+  const statusInfo =
     item.lateMinutes > 0
-      ? {
-          text: `Terlambat ${item.lateMinutes} menit`,
-          className: "text-orange-600",
-        }
+      ? { text: `Terlambat ${item.lateMinutes} Menit`, isIssue: true }
       : item.earlyLeaveMinutes > 0
-        ? {
-            text: `Pulang cepat ${item.earlyLeaveMinutes} menit`,
-            className: "text-amber-600",
-          }
-        : { text: "Normal", className: "text-emerald-600" };
+        ? { text: `Pulang Cepat ${item.earlyLeaveMinutes} Menit`, isIssue: true }
+        : {
+            text:
+              !item.status || item.status.toLowerCase() === "hadir"
+                ? "Tepat Waktu"
+                : item.status,
+            isIssue: false,
+          };
 
   return (
     <Link
       href={`/history/${item.id}`}
-      className="history-row-enter block rounded-3xl border border-blue-100 bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:bg-[#f8fbff] hover:shadow-xl hover:shadow-slate-200/60 active:scale-[0.99]"
+      className="history-row-enter block rounded-xl border border-[#dbe6f7] bg-white p-4 shadow-sm transition active:scale-[0.99]"
       style={{ animationDelay: delay }}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex min-w-0 gap-4">
-          <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
-            <p className="text-lg font-black leading-none">{shortDate[0]}</p>
-            <p className="mt-1 text-[10px] font-black uppercase leading-none">
-              {shortDate[1]}
-            </p>
-          </div>
+      <div className="flex items-start justify-between gap-3">
+        <h2 className="text-[17px] font-bold capitalize leading-6 text-[#111]">
+          {formatDateLabel(item.date)}
+        </h2>
 
-          <div className="min-w-0">
-            <h2 className="truncate text-base font-black capitalize text-slate-950 md:text-xl">
-              {formatDateLabel(item.date)}
-            </h2>
+        <span className="inline-flex shrink-0 items-center gap-0.5 pt-0.5 text-[11px] text-slate-500">
+          Detail Presensi
+          <ChevronRight size={14} />
+        </span>
+      </div>
 
-            <AppBadge variant={getStatusVariant(item.status)} className="mt-2">
-              {item.status}
-            </AppBadge>
+      <div className="mt-3 grid grid-cols-3 divide-x divide-[#dce6f5] text-center">
+        <div className="min-w-0 px-2">
+          <p className="text-xs text-slate-500">Lokasi</p>
+          <p className="mt-1 truncate text-[17px] font-bold text-[#0a3a8c]">
+            {item.checkInWorkModeLabel || "-"}
+          </p>
+        </div>
 
-	            <div className="mt-4 grid gap-2 text-sm font-bold text-slate-500 sm:grid-cols-3">
-              <div className="flex items-center gap-2">
-                <Clock3
-                  size={17}
-                  className="shrink-0 text-[#123c8c]"
-                  strokeWidth={2.6}
-                />
-                <span>
-                  {item.checkIn} - {item.checkOut}
-                </span>
-              </div>
+        <div className="min-w-0 px-2">
+          <p className="text-xs text-slate-500">Durasi</p>
+          <p className="mt-1 truncate text-[17px] font-bold text-[#0a3a8c]">
+            {formatWorkDuration(item.workMinutes)}
+          </p>
+        </div>
 
-              <div className="flex items-center gap-2">
-                <TimerReset
-                  size={17}
-                  className="shrink-0 text-[#123c8c]"
-                  strokeWidth={2.6}
-                />
-                <span>{formatWorkDuration(item.workMinutes)}</span>
-              </div>
-
-	              <span className={note.className}>{note.text}</span>
-	            </div>
-	          </div>
-	        </div>
-
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#f8fbff] text-slate-400 transition group-hover:text-[#123c8c]">
-          <ChevronRight size={20} strokeWidth={2.6} />
+        <div className="min-w-0 px-2">
+          <p className="text-xs text-slate-500">Status</p>
+          <p
+            className={`mt-1 break-words font-bold leading-5 ${
+              statusInfo.isIssue
+                ? "text-[13px] text-[#e11d1d]"
+                : "text-[17px] text-[#0a3a8c]"
+            }`}
+          >
+            {statusInfo.text}
+          </p>
         </div>
       </div>
     </Link>
   );
 }
+
 
 function HistoryContent({
   isLoading,
@@ -531,7 +468,9 @@ export default function HistoryPage() {
 
   const [month, setMonth] = useState(today.getMonth() + 1);
   const [year, setYear] = useState(today.getFullYear());
-  const [sort, setSort] = useState<"desc" | "asc">("desc");
+  const [sort] = useState<"desc" | "asc">("desc");
+  const [location, setLocation] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -539,6 +478,40 @@ export default function HistoryPage() {
     () => months.find((item) => item.value === month)?.label || "",
     [month],
   );
+
+  const locationOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          records
+            .map((item) => item.checkInWorkModeLabel)
+            .filter((value): value is string => Boolean(value)),
+        ),
+      ),
+    [records],
+  );
+
+  const statusOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(records.map((item) => item.status).filter(Boolean)),
+      ),
+    [records],
+  );
+
+  const visibleRecords = useMemo(
+    () =>
+      records.filter(
+        (item) =>
+          (!location || item.checkInWorkModeLabel === location) &&
+          (!statusFilter || item.status === statusFilter),
+      ),
+    [records, location, statusFilter],
+  );
+
+  const isCurrentMonth =
+    month === today.getMonth() + 1 && year === today.getFullYear();
+  const isCurrentYear = year === today.getFullYear();
 
   async function getHistory() {
     try {
@@ -582,44 +555,65 @@ export default function HistoryPage() {
         />
       </div>
 
-      <main className="min-h-dvh bg-gradient-to-br from-[#f6f8ff] via-white to-[#eef4ff] pb-28 text-slate-950">
-        <MobileHeader />
-
+      <main className="min-h-dvh bg-[#f4f8ff] pb-28 text-slate-950">
         <DesktopHero
           monthLabel={currentMonthLabel}
           year={year}
-          total={records.length}
+          total={visibleRecords.length}
           sort={sort}
         />
 
-        <section className="history-enter mx-auto max-w-7xl rounded-t-[2.5rem] bg-white px-5 pb-10 pt-8 md:mt-8 md:rounded-[2.5rem] md:px-8 lg:px-10">
+        <section className="history-enter mx-auto max-w-3xl px-5 pb-10 pt-8 md:mt-4 md:px-8">
           <FilterCard
             month={month}
             year={year}
-            sort={sort}
-            monthLabel={currentMonthLabel}
+            location={location}
+            status={statusFilter}
+            locationOptions={locationOptions}
+            statusOptions={statusOptions}
             isLoading={isLoading}
             onMonthChange={setMonth}
             onYearChange={setYear}
-            onSortChange={setSort}
+            onLocationChange={setLocation}
+            onStatusChange={setStatusFilter}
             onApply={getHistory}
           />
 
-          <div className="mt-6 grid grid-cols-3 gap-3">
-            <StatCard label="Total" value={records.length} delay="60ms" />
-            <StatCard
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            <StatTile
+              icon={Layers}
+              iconClass="bg-[#5b8def] text-white"
+              label="Total Presensi"
+              value={visibleRecords.length}
+              caption="Hari Presensi"
+              delay="60ms"
+            />
+            <StatTile
+              icon={CalendarDays}
+              iconClass="bg-[#c7c8f7] text-[#4b4fd6]"
               label="Bulan"
               value={currentMonthLabel}
-              large
+              caption={isCurrentMonth ? "Bulan Ini" : "Bulan dipilih"}
               delay="100ms"
             />
-            <StatCard label="Tahun" value={year} delay="140ms" />
+            <StatTile
+              icon={CalendarDays}
+              iconClass="bg-[#c9f6d6] text-[#14a54a]"
+              label="Tahun"
+              value={year}
+              caption={isCurrentYear ? "Tahun aktif" : "Tahun dipilih"}
+              delay="140ms"
+            />
           </div>
 
-          <div className="mt-6 space-y-4">
+          <h2 className="mb-3 mt-7 px-1 text-2xl font-bold text-[#111]">
+            Riwayat Presensi
+          </h2>
+
+          <div className="space-y-3">
             <HistoryContent
               isLoading={isLoading}
-              records={records}
+              records={visibleRecords}
               monthLabel={currentMonthLabel}
               year={year}
             />

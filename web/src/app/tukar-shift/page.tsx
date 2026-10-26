@@ -7,13 +7,19 @@ import {
   CheckCircle2,
   Info,
   Loader2,
-  Send,
   X,
   XCircle,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
+import {
+  FigmaHeader,
+  figmaButton,
+  figmaInput,
+  figmaLabel,
+  figmaTextarea,
+} from "@/components/ui/FigmaUI";
 
 type Colleague = {
   id: string;
@@ -330,12 +336,22 @@ export default function TukarShiftPage() {
   return (
     <MobileShell variant="employee">
       <TukarShiftMotionStyles />
-      <AppHeader
-        title="Tukar Shift"
-        eyebrow="Presensi"
-        rightLabel="Tukar Shift"
-        hideMobileMenuButton
-      />
+      <div className="min-h-dvh bg-[#f4f8ff]">
+      <div className="hidden md:block">
+        <AppHeader
+          title="Tukar Shift"
+          eyebrow="Presensi"
+          rightLabel="Tukar Shift"
+          hideMobileMenuButton
+        />
+      </div>
+
+      <div className="px-5 pt-6 md:hidden">
+        <FigmaHeader
+          title="Tukar Shift"
+          subtitle="Ajukan penukaran jadwal dengan rekan kerja."
+        />
+      </div>
 
       {alertState && alertTheme ? (
         <div className="pointer-events-none fixed right-4 top-4 z-[120] w-[calc(100vw-2rem)] max-w-md sm:right-7 sm:top-7">
@@ -463,7 +479,7 @@ export default function TukarShiftPage() {
         </div>
       ) : null}
 
-      <main className="mx-auto max-w-7xl space-y-6 px-5 py-6 pb-28 md:px-10 lg:px-16">
+      <main className="mx-auto max-w-7xl space-y-6 px-8 py-6 pb-32 md:px-10 lg:px-16">
         {/* NOTIFIKASI PERMINTAAN SHIFT MASUK */}
         {pendingIncoming.length > 0 ? (
           <div className="tukar-shift-enter space-y-3">
@@ -535,174 +551,157 @@ export default function TukarShiftPage() {
           {/* FORM BUAT PENGAJUAN TUKAR SHIFT */}
           <form
             onSubmit={handleSubmit}
-            className="tukar-shift-enter h-fit rounded-3xl border border-blue-100 bg-white p-5 shadow-xl shadow-slate-200/60 sm:p-6"
+            className="tukar-shift-enter h-fit space-y-5"
           >
-            <div className="flex items-center gap-3 border-b border-slate-100 pb-5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
-                <ArrowLeftRight size={24} strokeWidth={2.6} />
-              </div>
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
-                  Form Tukar Shift
-                </p>
-                <h2 className="mt-1 text-2xl font-black text-slate-950">
-                  Buat Pengajuan
-                </h2>
-                <p className="mt-1 text-sm font-bold text-slate-400">
-                  Shift kamu saat ini:{" "}
-                  <span className="text-[#123c8c]">{currentShiftName}</span>
-                </p>
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={() => setIsRulesOpen(true)}
+              className="flex h-[52px] w-full items-center gap-3 rounded-xl bg-[#dce7fb] px-5 text-[17px] font-medium text-[#0a55d8] transition active:scale-[0.99]"
+            >
+              <Info size={20} strokeWidth={2.2} />
+              Aturan
+            </button>
 
-            <div className="mt-5 space-y-4">
-              <div className="grid gap-2 rounded-3xl bg-[#f8fbff] p-2 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRequestMode("swap");
-                    setTargetShiftName("");
-                  }}
-                  className={`rounded-2xl px-4 py-3 text-left transition active:scale-[0.98] ${
-                    requestMode === "swap"
-                      ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20"
-                      : "bg-white text-slate-600 ring-1 ring-blue-100"
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setRequestMode("swap");
+                  setTargetShiftName("");
+                }}
+                className={`min-h-[88px] rounded-xl px-4 py-4 text-left transition active:scale-[0.98] ${
+                  requestMode === "swap"
+                    ? "bg-[#0559e0] text-white shadow-lg shadow-[#0559e0]/30"
+                    : "bg-white text-slate-800 shadow-md shadow-slate-300/60"
+                }`}
+              >
+                <span className="block text-[15px] font-bold uppercase">
+                  Tukar Shift
+                </span>
+                <span
+                  className={`mt-1 block text-sm leading-5 ${
+                    requestMode === "swap" ? "text-white/60" : "text-slate-500"
                   }`}
                 >
-                  <span className="block text-xs font-black uppercase">
-                    Tukar Shift
-                  </span>
-                  <span className="mt-1 block text-[11px] font-bold leading-4 opacity-80">
-                    Antar rekan kerja
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRequestMode("self");
-                    setTargetUserId("");
-                  }}
-                  className={`rounded-2xl px-4 py-3 text-left transition active:scale-[0.98] ${
-                    requestMode === "self"
-                      ? "bg-[#123c8c] text-white shadow-lg shadow-blue-900/20"
-                      : "bg-white text-slate-600 ring-1 ring-blue-100"
-                  }`}
-                >
-                  <span className="block text-xs font-black uppercase">
-                    Geser Shift
-                  </span>
-                  <span className="mt-1 block text-[11px] font-bold leading-4 opacity-80">
-                    Khusus karyawan utama
-                  </span>
-                </button>
-              </div>
+                  Antar Rekan Kerja
+                </span>
+              </button>
 
               <button
                 type="button"
-                onClick={() => setIsRulesOpen(true)}
-                className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-3xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-black text-[#123c8c] transition hover:bg-[#edf4ff] active:scale-[0.98]"
+                onClick={() => {
+                  setRequestMode("self");
+                  setTargetUserId("");
+                }}
+                className={`min-h-[88px] rounded-xl px-4 py-4 text-left transition active:scale-[0.98] ${
+                  requestMode === "self"
+                    ? "bg-[#0559e0] text-white shadow-lg shadow-[#0559e0]/30"
+                    : "bg-white text-slate-800 shadow-md shadow-slate-300/60"
+                }`}
               >
-                <Info size={18} strokeWidth={2.8} />
-                Aturan
-              </button>
-
-              {requestMode === "swap" ? (
-                <div>
-                  <label className="text-sm font-black text-slate-700">
-                    Pilih Rekan Kerja
-                  </label>
-                  <select
-                    value={targetUserId}
-                    onChange={(e) => setTargetUserId(e.target.value)}
-                    className="mt-2 min-h-[52px] w-full rounded-3xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
-                  >
-                    <option value="">-- Pilih Rekan Kerja --</option>
-                    {colleagues.map((col) => (
-                      <option key={col.id} value={col.id}>
-                        {col.name} ({col.shiftName})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ) : (
-                <div>
-                  <label className="text-sm font-black text-slate-700">
-                    Pilih Shift Tujuan
-                  </label>
-                  <select
-                    value={targetShiftName}
-                    onChange={(e) => setTargetShiftName(e.target.value)}
-                    disabled={!canSelfShift}
-                    className="mt-2 min-h-[52px] w-full rounded-3xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <option value="">
-                      {canSelfShift
-                        ? "-- Pilih Shift Tujuan --"
-                        : "Hanya untuk karyawan utama"}
-                    </option>
-                    {availableShifts.map((shift) => (
-                      <option key={shift.id} value={shift.name}>
-                        {shift.name}
-                        {shift.startTime && shift.endTime
-                          ? ` (${shift.startTime}-${shift.endTime})`
-                          : ""}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div>
-                <label className="text-sm font-black text-slate-700">
-                  {requestMode === "swap"
-                    ? "Tanggal Tukar Shift"
-                    : "Tanggal Geser Shift"}
-                </label>
-                <input
-                  type="date"
-                  value={swapDate}
-                  min={getTodayString()}
-                  onChange={(e) => setSwapDate(e.target.value)}
-                  className="mt-2 min-h-[52px] w-full rounded-3xl border border-blue-100 bg-[#f8fbff] px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
-                />
-                <p className="mt-2 text-[11px] font-bold leading-4 text-slate-400">
-                  Pengajuan hanya bisa dibuat sebelum batas 30 menit dari jam
-                  masuk shift pada tanggal tersebut.
-                </p>
-              </div>
-
-              <div>
-                <label className="text-sm font-black text-slate-700">
-                  Alasan (Opsional)
-                </label>
-                <textarea
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder={
-                    requestMode === "swap"
-                      ? "Alasan singkat tukar shift..."
-                      : "Alasan singkat geser shift..."
-                  }
-                  className="mt-2 min-h-28 w-full resize-none rounded-3xl border border-blue-100 bg-[#f8fbff] px-4 py-4 text-sm font-bold leading-6 text-slate-700 outline-none focus:border-[#123c8c] focus:ring-4 focus:ring-blue-100"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-3xl bg-[#123c8c] px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-900/20 transition hover:bg-[#0e2f70] active:scale-[0.98] disabled:opacity-50"
-              >
-                {isSubmitting ? (
-                  <Loader2 size={18} className="animate-spin" />
-                ) : (
-                  <Send size={18} />
-                )}
-                {requestMode === "swap"
-                  ? "Kirim Pengajuan"
-                  : "Simpan Geser Shift"}
+                <span className="block text-[15px] font-bold uppercase">
+                  Geser Shift
+                </span>
+                <span
+                  className={`mt-1 block text-sm leading-5 ${
+                    requestMode === "self" ? "text-white/60" : "text-slate-500"
+                  }`}
+                >
+                  Khusus Karyawan utama
+                </span>
               </button>
             </div>
+
+            <p className="text-sm font-medium text-slate-500">
+              Shift kamu saat ini:{" "}
+              <span className="font-semibold text-[#0a3a8c]">
+                {currentShiftName}
+              </span>
+            </p>
+
+            {requestMode === "swap" ? (
+              <div>
+                <label className={figmaLabel}>Pilih Rekan Kerja</label>
+                <select
+                  value={targetUserId}
+                  onChange={(e) => setTargetUserId(e.target.value)}
+                  className={figmaInput}
+                >
+                  <option value="">- pilih rekan kerja -</option>
+                  {colleagues.map((col) => (
+                    <option key={col.id} value={col.id}>
+                      {col.name} ({col.shiftName})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div>
+                <label className={figmaLabel}>Pilih Shift Tujuan</label>
+                <select
+                  value={targetShiftName}
+                  onChange={(e) => setTargetShiftName(e.target.value)}
+                  disabled={!canSelfShift}
+                  className={`${figmaInput} disabled:cursor-not-allowed disabled:opacity-60`}
+                >
+                  <option value="">
+                    {canSelfShift
+                      ? "- pilih shift tujuan -"
+                      : "Hanya untuk karyawan utama"}
+                  </option>
+                  {availableShifts.map((shift) => (
+                    <option key={shift.id} value={shift.name}>
+                      {shift.name}
+                      {shift.startTime && shift.endTime
+                        ? ` (${shift.startTime}-${shift.endTime})`
+                        : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div>
+              <label className={figmaLabel}>
+                {requestMode === "swap" ? "Tanggal Tukar" : "Tanggal Geser"}
+              </label>
+              <input
+                type="date"
+                value={swapDate}
+                min={getTodayString()}
+                onChange={(e) => setSwapDate(e.target.value)}
+                className={figmaInput}
+              />
+              <p className="mt-2 px-1 text-[11px] leading-4 text-slate-500">
+                Pengajuan hanya bisa dibuat sebelum batas 30 menit dari jam
+                masuk shift pada tanggal tersebut.
+              </p>
+            </div>
+
+            <div>
+              <label className={figmaLabel}>Alasan (Opsional)</label>
+              <textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder={
+                  requestMode === "swap"
+                    ? "alasan singkat tukar shift...."
+                    : "alasan singkat geser shift...."
+                }
+                className={figmaTextarea}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`${figmaButton} mt-6`}
+            >
+              {isSubmitting ? (
+                <Loader2 size={20} className="animate-spin" />
+              ) : null}
+              {requestMode === "swap" ? "Kirim Pengajuan" : "Simpan Geser Shift"}
+            </button>
           </form>
 
           {/* RIWAYAT SHIFT SWAP */}
@@ -710,7 +709,7 @@ export default function TukarShiftPage() {
             className="tukar-shift-enter min-w-0 space-y-4"
             style={{ animationDelay: "90ms" }}
           >
-            <div className="rounded-3xl bg-[#123c8c] p-5 text-white shadow-xl shadow-blue-900/20">
+            <div className="rounded-2xl bg-gradient-to-br from-[#2a6df0] to-[#0d3ea6] p-5 text-white shadow-lg shadow-[#0d3ea6]/25">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15">
                   <ArrowLeftRight size={25} strokeWidth={2.6} />
@@ -818,6 +817,8 @@ export default function TukarShiftPage() {
           </div>
         </div>
       </main>
+
+      </div>
 
       <BottomNav variant="employee" />
     </MobileShell>

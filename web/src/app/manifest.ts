@@ -9,17 +9,23 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     display_override: ["standalone", "minimal-ui"],
     background_color: "#ffffff",
-    theme_color: "#123c8c",
+    theme_color: "#3228da",
     orientation: "portrait",
     icons: [
       {
-        src: "/icons/presensi-icon-192.png?v=creativemu-white-bg-2",
+        src: "/icons/presensi-icon-192.png?v=creativemu-figma-1",
         sizes: "192x192",
         type: "image/png",
-        purpose: "maskable",
+        purpose: "any",
       },
       {
-        src: "/icons/presensi-icon-512.png?v=creativemu-white-bg-2",
+        src: "/icons/presensi-icon-512.png?v=creativemu-figma-1",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/icons/presensi-icon-512.png?v=creativemu-figma-1",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",

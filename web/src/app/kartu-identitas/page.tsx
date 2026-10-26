@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeft,
   BadgeCheck,
   BriefcaseBusiness,
   Building2,
@@ -12,19 +11,18 @@ import {
   Download,
   IdCard,
   Loader2,
-  Lock,
   Mail,
   MapPin,
   Network,
   Phone,
   QrCode,
-  RotateCw,
   ShieldCheck,
 } from "lucide-react";
 
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
+import { FigmaHeader } from "@/components/ui/FigmaUI";
 import { useSiteLogoSettings } from "@/hooks/useSiteLogo";
 import { getBankOption } from "@/lib/bank-options";
 
@@ -491,6 +489,9 @@ export default function KartuIdentitasPage() {
     }
   }
 
+  const sideItems =
+    activeSide === "front" ? frontOfficeDetails : backSensitiveDetails;
+
   return (
     <MobileShell variant="employee" withBottomPadding={false}>
       <KartuIdentitasMotionStyles />
@@ -499,93 +500,81 @@ export default function KartuIdentitasPage() {
         <AppHeader title="Kartu Identitas" variant="employee" />
       </div>
 
-      <main className="flex h-dvh max-h-dvh flex-col justify-between overflow-hidden bg-white pb-16 text-slate-950 md:bg-gradient-to-br md:from-[#f6f8ff] md:via-white md:to-[#eef4ff]">
-        <section className="flex flex-1 flex-col overflow-hidden px-3 pt-2 md:px-8 md:pt-4">
-          {/* Header Controls */}
-          <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-slate-100/80 pb-2.5">
-            <div className="order-1 flex items-center gap-2 sm:gap-3">
-              <button
-                type="button"
-                onClick={() => router.back()}
-                className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-[#123456] shadow-sm shadow-slate-200/80 transition hover:bg-[#f8fbff] active:scale-[0.96] sm:h-10 sm:w-10"
-              >
-                <ArrowLeft size={19} strokeWidth={2.5} />
-              </button>
+      <main className="min-h-dvh bg-[#f4f8ff] pb-32 text-slate-950">
+        <section className="mx-auto max-w-3xl px-5 pt-6 md:pt-8">
+          <FigmaHeader title="KTA" subtitle="kartu tanda anggota" />
 
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#123c8c] md:text-xs">
-                  Kembali
-                </p>
-              </div>
-            </div>
-
-            {/* Side Switcher Toggle */}
-            <div className="order-2 flex w-full items-center justify-center gap-1 rounded-2xl border border-slate-200/60 bg-slate-100/80 p-1 sm:w-auto">
+          <div className="mt-7 flex rounded-xl border border-[#dde5f2] bg-white p-1">
+            {(
+              [
+                { key: "front", label: "Sisi Depan" },
+                { key: "back", label: "Sisi Belakang" },
+              ] as const
+            ).map((tab) => (
               <button
+                key={tab.key}
                 type="button"
-                onClick={() => setActiveSide("front")}
-                className={`flex-1 rounded-xl px-3 py-1.5 text-[11px] font-bold transition duration-200 sm:flex-initial sm:px-3.5 sm:text-xs ${
-                  activeSide === "front"
-                    ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
-                    : "text-slate-600 hover:text-slate-900"
+                onClick={() => setActiveSide(tab.key)}
+                className={`h-[46px] flex-1 rounded-lg text-[17px] font-medium transition ${
+                  activeSide === tab.key
+                    ? "bg-gradient-to-br from-[#2a6df0] to-[#0d3ea6] text-white shadow-md shadow-[#0d3ea6]/25"
+                    : "text-slate-500"
                 }`}
               >
-                Sisi Depan
+                {tab.label}
               </button>
-              <button
-                type="button"
-                onClick={() => setActiveSide("back")}
-                className={`flex-1 rounded-xl px-3 py-1.5 text-[11px] font-bold transition duration-200 sm:flex-initial sm:px-3.5 sm:text-xs ${
-                  activeSide === "back"
-                    ? "bg-[#123c8c] text-white shadow-md shadow-blue-900/20"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                Sisi Belakang
-              </button>
-            </div>
+            ))}
           </div>
 
-          {/* Main Card Area */}
-          <div className="flex flex-1 items-center justify-center py-2 overflow-hidden">
+          <div className="mt-10">
             {loading ? (
-              <div className="flex items-center gap-3 rounded-3xl border border-blue-100 bg-[#f8fbff] p-5 text-sm font-bold text-slate-500">
-                <Loader2 size={20} className="animate-spin text-[#123c8c]" />
+              <div className="flex items-center gap-3 rounded-2xl border border-[#dde5f2] bg-white p-5 text-sm font-medium text-slate-500">
+                <Loader2 size={20} className="animate-spin text-[#0559e0]" />
                 Mengambil kartu identitas...
               </div>
             ) : errorMessage || !user ? (
-              <div className="rounded-3xl border border-red-100 bg-red-50 px-6 py-6 text-center">
+              <div className="rounded-2xl border border-red-100 bg-red-50 px-6 py-6 text-center">
                 <p className="text-xs font-bold text-red-700">
                   {errorMessage || "Kartu identitas tidak ditemukan."}
                 </p>
               </div>
             ) : (
-              <div className="w-full max-w-[840px] flex flex-col items-center">
-                {/* Flip button */}
-                <div className="mb-2 flex w-full justify-end px-1">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setActiveSide((prev) => (prev === "front" ? "back" : "front"))
-                    }
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#123c8c] transition hover:opacity-80 active:scale-95"
-                  >
-                    <RotateCw size={13} strokeWidth={2.5} /> Flip Sisi Kartu
-                  </button>
+              <div
+                ref={cardRef}
+                className="kartu-identitas-enter mx-auto w-full max-w-[840px] overflow-hidden rounded-xl border-2 border-[#0a3a8c] bg-white shadow-xl shadow-[#0d3ea6]/15"
+              >
+                <div className="bg-gradient-to-r from-[#1a47b0] via-[#4b2ad6] to-[#8b00ff] px-4 py-3 text-base font-semibold text-white md:px-6 md:py-4 md:text-xl">
+                  Kartu Karyawan
                 </div>
-                <div
-                  ref={cardRef}
-                  className="kartu-identitas-enter w-full h-[270px] sm:h-[320px] md:h-[340px] overflow-hidden rounded-[1.75rem] border border-blue-900/20 bg-gradient-to-br from-[#123c8c] via-[#0f3478] to-[#0a2558] shadow-2xl shadow-blue-950/20"
-                >
-                  <div className="grid h-full grid-cols-[110px_1fr] sm:grid-cols-[180px_1fr] md:grid-cols-[210px_1fr]">
-                    {/* LEFT BLUE SIDEBAR */}
-                    <div className="relative flex h-full flex-col items-center justify-center border-r border-white/15 p-3 text-center text-white md:p-5">
-                      <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-blue-200/90 md:text-xs">
-                        {activeSide === "front" ? "PRESENSI" : "VERIFIKASI"}
-                      </p>
 
+                <div className="relative">
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 overflow-hidden"
+                  >
+                    <div className="absolute -inset-10 grid -rotate-12 grid-cols-4 gap-x-6 gap-y-8 opacity-[0.07]">
+                      {Array.from({ length: 20 }).map((_, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-900"
+                        >
+                          {logoSrc ? (
+                            <img
+                              src={logoSrc}
+                              alt=""
+                              className="h-6 w-6 shrink-0 object-contain"
+                            />
+                          ) : null}
+                          <span className="truncate">{siteTitle}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="relative grid grid-cols-[30%_1fr] gap-3 p-3.5 md:gap-6 md:p-6">
+                    <div className="flex min-w-0 flex-col items-center text-center">
                       {activeSide === "front" ? (
-                        <div className="mt-2.5 flex h-22 w-18 items-center justify-center overflow-hidden rounded-2xl border-2 border-white/40 bg-[#eaf1ff] text-2xl font-bold text-[#123c8c] shadow-md ring-2 ring-white/20 md:h-32 md:w-26 md:text-3xl">
+                        <div className="flex aspect-[5/6] w-full max-w-[150px] items-center justify-center overflow-hidden bg-[#d9d9d9] text-2xl font-semibold text-[#0a3a8c]">
                           {user.profile_photo ? (
                             <img
                               src={user.profile_photo}
@@ -597,105 +586,33 @@ export default function KartuIdentitasPage() {
                           )}
                         </div>
                       ) : (
-                        <div className="mt-2.5 flex h-22 w-18 flex-col items-center justify-center rounded-2xl border-2 border-white/40 bg-white text-[#123c8c] shadow-md ring-2 ring-white/20 md:h-32 md:w-26">
-                          <QrCode size={36} strokeWidth={2.2} />
-                          <span className="mt-1 text-[8px] font-bold uppercase tracking-wider text-[#123c8c]">
-                            VERIFIED
+                        <div className="flex aspect-[5/6] w-full max-w-[150px] flex-col items-center justify-center bg-white text-[#0a3a8c] ring-1 ring-[#dde5f2]">
+                          <QrCode size={40} strokeWidth={2} />
+                          <span className="mt-1 text-[8px] font-bold uppercase tracking-wider">
+                            Verified
                           </span>
                         </div>
                       )}
 
-                      <p className="mt-2.5 max-w-full truncate text-xs font-bold text-white md:mt-3.5 md:text-lg tracking-tight">
+                      <p className="mt-3 w-full break-words text-[12px] font-medium uppercase leading-4 text-[#1a47b0] md:text-lg md:leading-6">
                         {user.name}
                       </p>
-                      <p className="mt-1 rounded-full bg-white/15 px-3 py-0.5 text-[8px] font-semibold tracking-wide text-blue-50 ring-1 ring-white/25 backdrop-blur-sm md:text-xs">
-                        {formatRole(user.role)}
+                      <p className="w-full break-words text-[12px] font-medium leading-4 text-[#1a47b0] md:text-lg md:leading-6">
+                        {user.jabatan?.name || formatRole(user.role)}
                       </p>
                     </div>
 
-                    {/* RIGHT PANEL */}
-                    <div className="relative flex h-full flex-col justify-between min-w-0 bg-gradient-to-br from-white via-[#f8fbff] to-[#f0f5ff] p-3.5 md:p-5">
-                      {/* Panel Header */}
-                      <div className="flex shrink-0 items-center justify-between border-b border-blue-900/10 pb-2">
-                        <div className="min-w-0">
-                          <p className="text-[8px] font-bold uppercase tracking-[0.16em] text-[#123c8c] md:text-[9px]">
-                            {activeSide === "front"
-                              ? "Kartu Karyawan"
-                              : "Kartu Karyawan"}
+                    <div className="grid min-w-0 grid-cols-2 content-start gap-x-3 gap-y-4 md:gap-x-6 md:gap-y-6">
+                      {sideItems.map((item) => (
+                        <div key={item.label} className="min-w-0">
+                          <p className="text-[7px] font-medium uppercase tracking-wide text-slate-600 md:text-[11px]">
+                            {item.label}
                           </p>
-                          <h2 className="text-xs md:text-lg font-bold tracking-tight text-[#123456]">
-                            {activeSide === "front"
-                              ? "Identitas Pegawai"
-                              : "Detail Personal"}
-                          </h2>
+                          <p className="mt-0.5 break-words text-[10px] font-medium leading-3 text-[#0a3a8c] md:text-sm md:leading-5">
+                            {item.value}
+                          </p>
                         </div>
-
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#123c8c] border border-blue-100 md:h-9 md:w-9">
-                          {activeSide === "front" ? (
-                            <IdCard size={15} strokeWidth={2.4} />
-                          ) : (
-                            <Lock size={15} strokeWidth={2.4} />
-                          )}
-                        </div>
-                      </div>
-
-                      {/* FRONT SIDE CONTENT */}
-                      {activeSide === "front" ? (
-                        <div className="my-auto grid grid-cols-2 gap-x-3 gap-y-2 md:gap-x-5 md:gap-y-3">
-                          {frontOfficeDetails.map((item) => (
-                            <div key={item.label} className="min-w-0">
-                              <div className="flex items-center gap-2">
-                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#123c8c] border border-blue-100/60 md:h-7 md:w-7">
-                                  <item.icon size={13} strokeWidth={2.4} />
-                                </div>
-
-                                <div className="min-w-0">
-                                  <p className="text-[7px] font-semibold uppercase tracking-wider text-slate-400 md:text-[8px]">
-                                    {item.label}
-                                  </p>
-                                  <p className="truncate text-[11px] font-bold text-[#123456] md:text-xs">
-                                    {item.value}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        /* BACK SIDE CONTENT */
-                        <div className="my-auto grid grid-cols-2 gap-x-3 gap-y-2.5 md:gap-x-5 md:gap-y-3.5">
-                          {backSensitiveDetails.map((item) => (
-                            <div key={item.label} className="min-w-0">
-                              <div className="flex items-center gap-2">
-                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#123c8c] border border-blue-100/60 md:h-7 md:w-7">
-                                  <item.icon size={13} strokeWidth={2.4} />
-                                </div>
-
-                                <div className="min-w-0">
-                                  <p className="text-[7px] font-semibold uppercase tracking-wider text-slate-400 md:text-[8px]">
-                                    {item.label}
-                                  </p>
-                                  <p className="truncate text-[11px] font-bold text-[#123456] md:text-xs">
-                                    {item.value}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Footer Badge */}
-                      <div className="flex shrink-0 items-center justify-between rounded-xl bg-gradient-to-r from-[#123c8c] to-[#0f3478] px-3 py-1.5 shadow-sm">
-                        <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-blue-100 md:text-[10px]">
-                          {siteTitle}
-                        </p>
-                        <BadgeCheck
-                          size={14}
-                          strokeWidth={2.5}
-                          className="shrink-0 text-white"
-                        />
-                      </div>
+                      ))}
                     </div>
                   </div>
                 </div>

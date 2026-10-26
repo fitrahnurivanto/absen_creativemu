@@ -1,25 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   AlertCircle,
-  ArrowLeft,
   Camera,
-  CheckCircle2,
   Clock3,
-  ExternalLink,
+  FileText,
   ImageIcon,
   MapPin,
-  Navigation,
-  ShieldCheck,
-  Timer,
   type LucideIcon,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
+import { FigmaHeader } from "@/components/ui/FigmaUI";
 
 type LocationValue =
   | string
@@ -110,26 +106,13 @@ function formatMinutes(minutes: number) {
   return `${remainingMinutes} menit`;
 }
 
-function getStatusStyle(status: string) {
-  const normalizedStatus = String(status || "").toLowerCase();
+function formatClock(value?: string | null) {
+  const text = String(value || "").trim();
+  return text || "--:--";
+}
 
-  if (normalizedStatus.includes("terlambat")) {
-    return "bg-orange-50 text-orange-700 ring-orange-100";
-  }
-
-  if (normalizedStatus.includes("cuti")) {
-    return "bg-purple-50 text-purple-700 ring-purple-100";
-  }
-
-  if (normalizedStatus.includes("sakit")) {
-    return "bg-rose-50 text-rose-700 ring-rose-100";
-  }
-
-  if (normalizedStatus.includes("tidak")) {
-    return "bg-red-50 text-red-700 ring-red-100";
-  }
-
-  return "bg-emerald-50 text-emerald-700 ring-emerald-100";
+function formatMinuteLabel(minutes: number) {
+  return formatMinutes(minutes).replace("menit", "Menit").replace("jam", "Jam");
 }
 
 function hasText(value?: string | null) {
@@ -386,213 +369,185 @@ function HistoryDetailMotionStyles() {
   );
 }
 
+function SectionCard({
+  icon: Icon,
+  eyebrow,
+  title,
+  children,
+  delay = "0ms",
+}: {
+  icon: LucideIcon;
+  eyebrow: string;
+  title: string;
+  children: ReactNode;
+  delay?: string;
+}) {
+  return (
+    <section
+      className="history-detail-row-enter rounded-xl border border-[#dbe6f7] bg-white p-4 shadow-sm"
+      style={{ animationDelay: delay }}
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#6c9cf2] text-white">
+          <Icon size={20} strokeWidth={2.2} />
+        </div>
+
+        <div>
+          <p className="text-xs leading-4 text-slate-500">{eyebrow}</p>
+          <h3 className="text-lg font-bold leading-6 text-[#111]">{title}</h3>
+        </div>
+      </div>
+
+      <div className="mt-4">{children}</div>
+    </section>
+  );
+}
+
 function MetricCard({
   label,
   value,
   description,
   icon: Icon,
+  iconClass,
   delay = "0ms",
 }: {
   label: string;
   value: string;
   description: string;
   icon: LucideIcon;
+  iconClass: string;
   delay?: string;
 }) {
   return (
     <div
-      className="history-detail-row-enter rounded-3xl border border-blue-100 bg-white p-5 shadow-lg shadow-slate-200/50 transition duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-slate-300/40"
+      className="history-detail-row-enter flex min-w-0 items-start gap-2 rounded-xl border border-[#dbe6f7] bg-white p-3 shadow-sm"
       style={{ animationDelay: delay }}
     >
-      <div className="flex items-center gap-4">
-        <div className="history-detail-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
-          <Icon size={22} strokeWidth={2.6} />
-        </div>
+      <div
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${iconClass}`}
+      >
+        <Icon size={20} strokeWidth={2.2} />
+      </div>
 
-        <div>
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">
-            {label}
-          </p>
-
-          <h3 className="mt-1 text-xl font-black text-slate-950">{value}</h3>
-
-          <p className="mt-1 text-xs font-bold text-slate-500">{description}</p>
-        </div>
+      <div className="min-w-0">
+        <p className="text-[11px] text-slate-500">{label}</p>
+        <p className="text-[15px] font-bold leading-5 text-[#111]">{value}</p>
+        <p className="mt-0.5 text-[10px] leading-3 text-slate-500">
+          {description}
+        </p>
       </div>
     </div>
   );
 }
 
 function PhotoCard({
-  title,
   subtitle,
   imageUrl,
   isAvailable,
-  delay = "0ms",
 }: {
-  title: string;
   subtitle: string;
   imageUrl: string;
   isAvailable: boolean;
-  delay?: string;
 }) {
   return (
-    <div
-      className="history-detail-row-enter min-w-0"
-      style={{ animationDelay: delay }}
-    >
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="history-detail-icon-pop flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
-            <Camera size={23} strokeWidth={2.6} />
-          </div>
+    <div className="min-w-0 rounded-xl border border-[#dbe6f7] bg-white p-3">
+      <p className="text-xs text-slate-500">{subtitle}</p>
 
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
-              {title}
-            </p>
-
-            <h3 className="mt-1 text-base font-black text-slate-950">
-              {subtitle}
-            </h3>
-          </div>
+      {isAvailable ? (
+        <a
+          href={imageUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-2 block overflow-hidden rounded-lg bg-[#e4e7ec]"
+        >
+          <img
+            src={imageUrl}
+            alt={subtitle}
+            className="history-detail-image-enter h-32 w-full object-cover md:h-48"
+          />
+        </a>
+      ) : (
+        <div className="mt-2 flex h-32 flex-col items-center justify-center rounded-lg bg-[#e4e7ec] text-slate-400 md:h-48">
+          <ImageIcon size={26} strokeWidth={2} />
+          <p className="mt-1 text-[11px]">Foto belum tersedia</p>
         </div>
-
-        {isAvailable ? (
-          <div className="rounded-full bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700 ring-1 ring-emerald-100">
-            Tersedia
-          </div>
-        ) : (
-          <div className="rounded-full bg-slate-50 px-3 py-2 text-xs font-black text-slate-500 ring-1 ring-slate-100">
-            Kosong
-          </div>
-        )}
-      </div>
-
-      <div className="mt-4">
-        {isAvailable ? (
-          <div className="overflow-hidden rounded-2xl bg-slate-950 shadow-md">
-            <img
-              src={imageUrl}
-              alt={subtitle}
-              className="history-detail-image-enter h-80 w-full object-contain transition duration-300 hover:scale-[1.02] md:h-96"
-            />
-          </div>
-        ) : (
-          <div className="flex min-h-60 flex-col items-center justify-center rounded-2xl bg-slate-50 p-6 text-center md:min-h-72">
-            <div className="history-detail-icon-pop flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
-              <ImageIcon size={30} strokeWidth={2.4} />
-            </div>
-
-            <h4 className="mt-4 text-base font-black text-slate-700">
-              Foto belum tersedia
-            </h4>
-
-            <p className="mt-2 max-w-xs text-sm font-semibold leading-6 text-slate-400">
-              Foto presensi belum tersimpan pada data ini.
-            </p>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }
 
 function LocationCard({
   title,
+  badge,
   location,
-  delay = "0ms",
 }: {
   title: string;
+  badge: string;
   location: LocationValue;
-  delay?: string;
 }) {
   const latitude = getLocationCoordinate(location, "lat");
   const longitude = getLocationCoordinate(location, "lng");
   const withinRadius = getLocationWithinRadius(location);
   const locationText = formatLocationText(location);
-
   const hasCoordinate = latitude !== null && longitude !== null;
-  const hasAddress = Boolean(locationText);
 
   const mapsUrl = hasCoordinate
     ? `https://www.google.com/maps?q=${latitude},${longitude}`
     : "#";
 
   return (
-    <div
-      className="history-detail-row-enter min-w-0"
-      style={{ animationDelay: delay }}
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="history-detail-icon-pop flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#eaf1ff] text-[#123c8c]">
-            <MapPin size={23} strokeWidth={2.6} />
-          </div>
-
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
-              Lokasi GPS
-            </p>
-
-            <h3 className="mt-1 text-base font-black text-slate-950">
-              {title}
-            </h3>
-          </div>
-        </div>
-
-        {withinRadius !== null ? (
-          <div
-            className={`rounded-full px-3 py-2 text-xs font-black ring-1 ${
-              withinRadius
-                ? "bg-emerald-50 text-emerald-700 ring-emerald-100"
-                : "bg-red-50 text-red-700 ring-red-100"
-            }`}
-          >
-            {withinRadius ? "Dalam radius" : "Di luar radius"}
-          </div>
-        ) : hasCoordinate || hasAddress ? (
-          <div className="rounded-full bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700 ring-1 ring-emerald-100">
-            Tersimpan
-          </div>
-        ) : null}
+    <div className="min-w-0 rounded-xl border border-[#dbe6f7] bg-white p-3">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-xs leading-4 text-slate-500">{title}</p>
+        <span
+          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium text-white ${
+            hasCoordinate ? "bg-[#2870ea]" : "bg-slate-400"
+          }`}
+        >
+          {badge}
+        </span>
       </div>
 
-      {hasCoordinate || hasAddress ? (
-        <div className="mt-4">
-          {hasCoordinate ? (
-            <a
-              href={mapsUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#123c8c] px-4 py-3 text-sm font-black text-white shadow-md shadow-blue-900/15 transition hover:bg-[#0f3274] active:scale-[0.98] sm:w-auto"
-            >
-              <Navigation size={17} strokeWidth={2.6} />
-              Buka Lokasi di Google Maps
-              <ExternalLink size={15} strokeWidth={2.6} />
-            </a>
-          ) : null}
-        </div>
+      {hasCoordinate ? (
+        <a
+          href={mapsUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-2 inline-block text-lg font-bold text-[#2870ea]"
+        >
+          Lihat Lokasi
+        </a>
       ) : (
-        <div className="mt-4 flex items-center gap-3 rounded-xl bg-slate-50 px-4 py-3">
-          <div className="history-detail-icon-pop flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm">
-            <MapPin size={22} strokeWidth={2.4} />
-          </div>
-
-          <div className="min-w-0">
-            <h4 className="text-sm font-black text-slate-700">
-              Lokasi belum tersedia
-            </h4>
-
-            <p className="mt-0.5 text-xs font-semibold leading-5 text-slate-400">
-              Data lokasi belum tersimpan.
-            </p>
-          </div>
-        </div>
+        <p className="mt-2 text-lg font-bold text-slate-400">Lihat Lokasi</p>
       )}
+
+      {locationText ? (
+        <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-slate-500">
+          {locationText}
+        </p>
+      ) : null}
+
+      {withinRadius !== null ? (
+        <p
+          className={`mt-1 text-[11px] font-medium ${
+            withinRadius ? "text-emerald-600" : "text-red-600"
+          }`}
+        >
+          {withinRadius ? "Dalam radius" : "Di luar radius"}
+        </p>
+      ) : null}
     </div>
   );
 }
+
+function NoteRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-[#dbe6f7] bg-white px-3 py-2.5 text-[13px] leading-5 text-slate-600">
+      {label} : {value}
+    </div>
+  );
+}
+
 
 function LoadingSkeleton() {
   return (
@@ -630,6 +585,7 @@ function LoadingSkeleton() {
 
 export default function HistoryDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const id = String(params.id || "");
 
   const [attendance, setAttendance] = useState<AttendanceDetail | null>(null);
@@ -669,271 +625,218 @@ export default function HistoryDetailPage() {
     <MobileShell variant="employee">
       <HistoryDetailMotionStyles />
 
-      <AppHeader title="Detail Presensi" rightLabel="Detail" />
+      <div className="min-h-dvh bg-[#f4f8ff]">
+        <div className="hidden md:block">
+          <AppHeader title="Detail Presensi" rightLabel="Detail" />
+        </div>
 
-      <section className="mx-auto max-w-7xl space-y-6 px-5 py-6 md:px-10 lg:px-16">
-        <Link
-          href="/history"
-          className="history-detail-row-enter inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#123c8c] shadow-lg shadow-slate-200/60 transition hover:-translate-y-0.5 hover:bg-[#f8fbff] active:scale-[0.98]"
-        >
-          <ArrowLeft size={18} strokeWidth={2.7} />
-          Kembali ke History
-        </Link>
+        <section className="mx-auto max-w-3xl space-y-4 px-5 pb-32 pt-6 md:px-8">
+          <FigmaHeader
+            title="Detail Presensi"
+            onBack={() => router.push("/history")}
+          />
 
-        {isLoading ? (
-          <LoadingSkeleton />
-        ) : !attendance ? (
-          <div className="history-detail-enter rounded-[2rem] border border-red-100 bg-white p-8 text-center shadow-xl shadow-slate-200/60">
-            <div className="history-detail-icon-pop mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-red-50 text-red-600">
-              <AlertCircle size={32} strokeWidth={2.5} />
+          {isLoading ? (
+            <LoadingSkeleton />
+          ) : !attendance ? (
+            <div className="history-detail-enter rounded-2xl border border-red-100 bg-white p-8 text-center shadow-sm">
+              <div className="history-detail-icon-pop mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-red-50 text-red-600">
+                <AlertCircle size={32} strokeWidth={2.5} />
+              </div>
+
+              <h2 className="mt-5 text-xl font-bold text-slate-950">
+                Data presensi tidak ditemukan
+              </h2>
+
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+                Data presensi ini tidak tersedia, sudah dihapus, atau tidak
+                sesuai dengan akun yang sedang login.
+              </p>
+
+              <Link
+                href="/history"
+                className="mt-6 inline-flex rounded-xl bg-gradient-to-br from-[#2a6df0] to-[#0d3ea6] px-5 py-3 text-sm font-semibold text-white transition active:scale-[0.98]"
+              >
+                Kembali ke Riwayat
+              </Link>
             </div>
+          ) : (
+            <>
+              <div className="history-detail-enter rounded-2xl bg-gradient-to-br from-[#2a6df0] to-[#0d3ea6] p-5 text-white shadow-xl shadow-[#0d3ea6]/30">
+                <h2 className="text-xl font-bold capitalize leading-7">
+                  {attendance.date}
+                </h2>
 
-            <h2 className="mt-5 text-2xl font-black text-slate-950">
-              Data presensi tidak ditemukan
-            </h2>
-
-            <p className="mx-auto mt-2 max-w-md text-sm font-semibold leading-6 text-slate-500">
-              Data presensi ini tidak tersedia, sudah dihapus, atau tidak sesuai
-              dengan akun yang sedang login.
-            </p>
-
-            <Link
-              href="/history"
-              className="mt-6 inline-flex rounded-2xl bg-[#123c8c] px-5 py-4 text-sm font-black text-white transition hover:bg-[#0f3274] active:scale-[0.98]"
-            >
-              Kembali ke Riwayat
-            </Link>
-          </div>
-        ) : (
-          <>
-            <div className="history-detail-enter relative overflow-hidden rounded-[2rem] bg-[#123c8c] p-6 text-white shadow-2xl shadow-blue-900/25 md:p-8">
-              <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                  <div className="history-detail-row-enter inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-blue-100 ring-1 ring-white/15">
-                    <ShieldCheck size={16} />
-                    Catatan Presensi
-                  </div>
-
-                  <h2
-                    className="history-detail-row-enter mt-5 text-3xl font-black capitalize tracking-tight md:text-5xl"
-                    style={{ animationDelay: "80ms" }}
-                  >
-                    {attendance.date}
-                  </h2>
-
-                  <div
-                    className={`history-detail-row-enter mt-5 inline-flex rounded-full px-4 py-2 text-sm font-black ring-1 ${getStatusStyle(
-                      attendance.status,
-                    )}`}
-                    style={{ animationDelay: "120ms" }}
-                  >
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-white/20 px-3 py-1 text-xs">
                     {attendance.status}
-                  </div>
+                  </span>
+                  {attendance.checkInWorkModeLabel ? (
+                    <span className="rounded-full bg-white/20 px-3 py-1 text-xs">
+                      {attendance.checkInWorkModeLabel}
+                    </span>
+                  ) : null}
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
-	                  <div
-	                    className="history-detail-row-enter rounded-3xl bg-white/10 p-5 ring-1 ring-white/15"
-	                    style={{ animationDelay: "160ms" }}
-	                  >
-	                    <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-100">
-	                      Check-in {attendance.checkInWorkModeLabel || "Kantor"}
-	                    </p>
-
-                    <p className="mt-2 text-3xl font-black">
-                      {attendance.checkIn}
+                <div className="mt-4 grid grid-cols-2 divide-x divide-white/25 rounded-lg border border-white/25 bg-[#0a2f8f]/40 py-4">
+                  <div className="px-4">
+                    <p className="text-xs text-white/85">
+                      CHECK-IN ({attendance.checkInWorkModeLabel || "Kantor"})
+                    </p>
+                    <p className="mt-1 text-3xl font-semibold leading-9">
+                      {formatClock(attendance.checkIn)}
+                      <span className="ml-1.5 text-sm font-semibold">WIB</span>
                     </p>
                   </div>
 
-	                  <div
-	                    className="history-detail-row-enter rounded-3xl bg-white/10 p-5 ring-1 ring-white/15"
-	                    style={{ animationDelay: "200ms" }}
-	                  >
-	                    <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-100">
-	                      Check-out {attendance.checkOutWorkModeLabel || "-"}
-	                    </p>
-
-                    <p className="mt-2 text-3xl font-black">
-                      {attendance.checkOut}
+                  <div className="px-4">
+                    <p className="text-xs text-white/85">
+                      CHECK-OUT ({attendance.checkOutWorkModeLabel || "-"})
+                    </p>
+                    <p className="mt-1 text-3xl font-semibold leading-9">
+                      {formatClock(attendance.checkOut)}
+                      <span className="ml-1.5 text-sm font-semibold">WIB</span>
                     </p>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="grid gap-5 md:grid-cols-3">
-              <MetricCard
-                label="Waktu Kerja"
-                value={formatMinutes(attendance.workMinutes)}
-	                description={
-	                  attendance.checkOut === "--:--"
-	                    ? "Belum dihitung karena belum checkout"
-	                    : "Total durasi kerja tercatat"
-	                }
-	                icon={Timer}
-                delay="60ms"
-              />
+              <div className="grid grid-cols-3 gap-2">
+                <MetricCard
+                  label="Waktu Kerja"
+                  value={formatMinuteLabel(attendance.workMinutes)}
+                  description={
+                    attendance.checkOut === "--:--"
+                      ? "Belum dihitung karena belum checkout"
+                      : "Durasi kerja hari ini"
+                  }
+                  icon={Clock3}
+                  iconClass="bg-[#6c9cf2] text-white"
+                  delay="60ms"
+                />
 
-              <MetricCard
-                label="Terlambat"
-                value={formatMinutes(attendance.lateMinutes)}
-                description="Keterlambatan check-in"
-                icon={Clock3}
-                delay="100ms"
-              />
+                <MetricCard
+                  label="Terlambat"
+                  value={formatMinuteLabel(attendance.lateMinutes)}
+                  description="Keterlambatan check-in"
+                  icon={AlertCircle}
+                  iconClass="bg-[#f4a3a3] text-[#d40000]"
+                  delay="100ms"
+                />
 
-              <MetricCard
-                label="Pulang Cepat"
-                value={formatMinutes(attendance.earlyLeaveMinutes)}
-                description="Pulang lebih awal"
-                icon={CheckCircle2}
-                delay="140ms"
-              />
-            </div>
+                <MetricCard
+                  label="Pulang Cepat"
+                  value={formatMinuteLabel(attendance.earlyLeaveMinutes)}
+                  description="Pulang lebih cepat"
+                  icon={Clock3}
+                  iconClass="bg-[#bdbdbd] text-[#222]"
+                  delay="140ms"
+                />
+              </div>
 
-            {(hasText(attendance.lateReason) ||
-              shouldShowVisitNote(attendance)) ? (
-              <section className="history-detail-row-enter rounded-[1.75rem] bg-white p-5 shadow-lg shadow-slate-200/50">
-                <div className="flex flex-col gap-1 border-b border-slate-100 pb-4">
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
-                    Keterangan Karyawan
-                  </p>
-                  <h3 className="text-xl font-black text-slate-950">
-                    Catatan Presensi
-                  </h3>
-                </div>
+              <SectionCard
+                icon={FileText}
+                eyebrow="Keterangan Karyawan"
+                title="Catatan Presensi"
+                delay="160ms"
+              >
+                {hasText(attendance.lateReason) ||
+                shouldShowVisitNote(attendance) ? (
+                  <div className="space-y-3">
+                    {hasText(attendance.lateReason) ? (
+                      <NoteRow
+                        label="Keterangan Terlambat"
+                        value={String(attendance.lateReason)}
+                      />
+                    ) : null}
 
-                <div className="mt-5 grid gap-3">
-                  {hasText(attendance.lateReason) ? (
-                    <div className="rounded-2xl border border-amber-100 bg-amber-50/70 p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-amber-700 ring-1 ring-amber-100">
-                          <Clock3 size={21} strokeWidth={2.7} />
-                        </div>
+                    {shouldShowVisitNote(attendance) ? (
+                      <div className="rounded-xl border border-[#dbe6f7] bg-[#f1f6fe] p-3">
+                        <p className="mb-2 text-sm font-medium text-[#e5710a]">
+                          Keterangan Kunjungan
+                        </p>
 
-                        <div className="min-w-0">
-                          <p className="text-[11px] font-black uppercase tracking-[0.16em] text-amber-700">
-                            Keterangan Terlambat
-                          </p>
-                          <p className="mt-2 text-sm font-bold leading-6 text-slate-700">
-                            {attendance.lateReason}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {shouldShowVisitNote(attendance) ? (
-                    <div className="rounded-2xl border border-orange-100 bg-orange-50/70 p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-orange-600 ring-1 ring-orange-100">
-                          <MapPin size={21} strokeWidth={2.7} />
-                        </div>
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-orange-600">
-                              Keterangan Kunjungan
-                            </p>
-                            <span className="rounded-full bg-white px-3 py-1 text-[10px] font-black text-orange-700 ring-1 ring-orange-100">
-                              Kunjungan saat check-out
-                            </span>
-                          </div>
-
-                          <p className="mt-2 text-sm font-black leading-6 text-slate-900">
-                            {getVisitTitle(attendance) ||
-                              "Tujuan kunjungan belum diisi"}
-                          </p>
-
-                          <div className="mt-3 grid gap-2 text-xs font-bold leading-5 text-slate-600 md:grid-cols-2">
-                            <div className="rounded-xl bg-white px-3 py-2 ring-1 ring-orange-100">
-                              <span className="text-orange-600">
-                                PIC / Client:{" "}
-                              </span>
-                              {getVisitClientName(attendance) || "Belum diisi"}
-                            </div>
-                            <div className="rounded-xl bg-white px-3 py-2 ring-1 ring-orange-100">
-                              <span className="text-orange-600">
-                                Alamat:{" "}
-                              </span>
-                              {getVisitAddress(attendance) || "Belum diisi"}
-                            </div>
-                          </div>
-
+                        <div className="space-y-2">
+                          <NoteRow
+                            label="Nama PT / Tujuan"
+                            value={
+                              getVisitTitle(attendance) || "Belum diisi"
+                            }
+                          />
+                          <NoteRow
+                            label="PIC / Client"
+                            value={
+                              getVisitClientName(attendance) || "Belum diisi"
+                            }
+                          />
+                          <NoteRow
+                            label="Alamat"
+                            value={
+                              getVisitAddress(attendance) || "Belum diisi"
+                            }
+                          />
                           {hasText(getVisitNote(attendance)) ? (
-                            <div className="mt-2 rounded-xl bg-white px-3 py-2 text-xs font-bold leading-5 text-slate-600 ring-1 ring-orange-100">
-                              <span className="text-orange-600">
-                                Catatan:{" "}
-                              </span>
-                              {getVisitNote(attendance)}
-                            </div>
+                            <NoteRow
+                              label="Catatan"
+                              value={String(getVisitNote(attendance))}
+                            />
                           ) : null}
                         </div>
                       </div>
-                    </div>
-                  ) : null}
-                </div>
-              </section>
-            ) : null}
+                    ) : null}
+                  </div>
+                ) : (
+                  <p className="rounded-lg border border-[#dbe6f7] bg-white px-3 py-2.5 text-[13px] text-slate-400">
+                    Tidak ada catatan presensi.
+                  </p>
+                )}
+              </SectionCard>
 
-            <section className="history-detail-row-enter rounded-[1.75rem] bg-white p-5 shadow-lg shadow-slate-200/50">
-              <div className="flex flex-col gap-1 border-b border-slate-100 pb-4">
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
-                  Dokumentasi
-                </p>
-                <h3 className="text-xl font-black text-slate-950">
-                  Foto Presensi
-                </h3>
-              </div>
+              <SectionCard
+                icon={Camera}
+                eyebrow="Foto Check-in/Check-out"
+                title="Dokumentasi"
+                delay="200ms"
+              >
+                <div className="grid grid-cols-2 gap-3">
+                  <PhotoCard
+                    subtitle="Foto Presensi masuk"
+                    imageUrl={`/api/attendance/${attendance.id}/photo?type=check-in`}
+                    isAvailable={attendance.hasCheckInPhoto}
+                  />
 
-              <div className="mt-5 grid gap-6 lg:grid-cols-2">
-                <PhotoCard
-                  title="Foto Check-in"
-                  subtitle="Foto presensi masuk"
-                  imageUrl={`/api/attendance/${attendance.id}/photo?type=check-in`}
-                  isAvailable={attendance.hasCheckInPhoto}
-                  delay="180ms"
-                />
-
-                <PhotoCard
-                  title="Foto Check-out"
-                  subtitle="Foto presensi pulang"
-                  imageUrl={`/api/attendance/${attendance.id}/photo?type=check-out`}
-                  isAvailable={attendance.hasCheckOutPhoto}
-                  delay="220ms"
-                />
-              </div>
-            </section>
-
-            <section className="history-detail-row-enter rounded-2xl bg-white p-4 shadow-md shadow-slate-200/40 md:p-5">
-              <div className="flex flex-col gap-1 border-b border-slate-100 pb-3">
-                <p className="text-xs font-black uppercase tracking-[0.2em] text-[#123c8c]">
-                  GPS
-                </p>
-                <h3 className="text-lg font-black text-slate-950">
-                  Lokasi Presensi
-                </h3>
-              </div>
-
-              <div className="mt-4 grid gap-4 divide-y divide-slate-100 lg:grid-cols-2 lg:divide-x lg:divide-y-0">
-                <LocationCard
-                  title="Lokasi Check-in"
-                  location={attendance.checkInLocation}
-                  delay="260ms"
-                />
-
-                <div className="pt-4 lg:pl-4 lg:pt-0">
-                  <LocationCard
-                    title="Lokasi Check-out"
-                    location={attendance.checkOutLocation}
-                    delay="300ms"
+                  <PhotoCard
+                    subtitle="Foto Presensi Pulang"
+                    imageUrl={`/api/attendance/${attendance.id}/photo?type=check-out`}
+                    isAvailable={attendance.hasCheckOutPhoto}
                   />
                 </div>
-              </div>
-            </section>
-          </>
-        )}
-      </section>
+              </SectionCard>
+
+              <SectionCard
+                icon={MapPin}
+                eyebrow="Lokasi Check-in/Check-out"
+                title="GPS"
+                delay="240ms"
+              >
+                <div className="grid grid-cols-2 gap-3">
+                  <LocationCard
+                    title="Lokasi Presensi Masuk"
+                    badge={attendance.checkInWorkModeLabel || "-//-"}
+                    location={attendance.checkInLocation}
+                  />
+
+                  <LocationCard
+                    title="Lokasi Presensi Pulang"
+                    badge={attendance.checkOutWorkModeLabel || "-//-"}
+                    location={attendance.checkOutLocation}
+                  />
+                </div>
+              </SectionCard>
+            </>
+          )}
+        </section>
+      </div>
 
       <BottomNav />
     </MobileShell>

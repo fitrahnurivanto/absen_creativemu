@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#123c8c",
+  themeColor: "#3228da",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -33,11 +33,9 @@ export const metadata: Metadata = {
     title: "Presensi",
   },
   icons: {
-    icon: [
-      { url: "/icon.png?v=creativemu-white-bg-2", type: "image/png" },
-    ],
-    shortcut: "/icon.png?v=creativemu-white-bg-2",
-    apple: "/apple-touch-icon.png?v=creativemu-white-bg-2",
+    icon: [{ url: "/icon.png?v=creativemu-figma-1", type: "image/png" }],
+    shortcut: "/icon.png?v=creativemu-figma-1",
+    apple: "/apple-touch-icon.png?v=creativemu-figma-1",
   },
   other: {
     google: "notranslate",
@@ -60,9 +58,9 @@ export default function RootLayout({
     >
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/icon.png?v=creativemu-white-bg-2" type="image/png" />
-        <link rel="shortcut icon" href="/icon.png?v=creativemu-white-bg-2" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=creativemu-white-bg-2" />
+        <link rel="icon" href="/icon.png?v=creativemu-figma-1" type="image/png" />
+        <link rel="shortcut icon" href="/icon.png?v=creativemu-figma-1" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=creativemu-figma-1" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="Presensi" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />

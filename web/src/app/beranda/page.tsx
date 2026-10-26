@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeftRight,
   Bell,
   CalendarDays,
-  PhoneCall,
   FileText,
   History,
   Megaphone,
@@ -18,7 +16,7 @@ import AppHeader from "@/components/AppHeader";
 import BottomNav from "@/components/BottomNav";
 import MobileShell from "@/components/MobileShell";
 import { AppCard } from "@/components/ui/AppUI";
-import { useSiteLogo } from "@/hooks/useSiteLogo";
+import HomeMobile from "@/components/employee/HomeMobile";
 
 type AttendanceToday = {
   checkIn: string;
@@ -26,6 +24,7 @@ type AttendanceToday = {
   status: string;
   description: string;
   schedule?: string;
+  workModeLabel?: string;
 };
 
 type UserRelation = {
@@ -59,7 +58,6 @@ type Announcement = {
 };
 
 const READ_ANNOUNCEMENT_KEY = "presensi_read_announcement_id";
-const WHATSAPP_LINK = "https://wa.me/6281234567890";
 
 const defaultUser: CurrentUser = {
   name: "",
@@ -77,6 +75,7 @@ const defaultAttendance: AttendanceToday = {
   status: "Menunggu",
   description: "Menunggu presensi",
   schedule: "",
+  workModeLabel: "",
 };
 
 const quickMenus = [
@@ -124,6 +123,18 @@ function getInitialName(name: string) {
     .join("")
     .slice(0, 2)
     .toUpperCase();
+}
+
+function getWorkModeLabel(value?: string) {
+  const text = String(value || "").trim();
+  const key = text.toLowerCase();
+
+  if (!text) return "";
+  if (key === "office" || key === "kantor") return "Kantor";
+  if (key === "wfh") return "WFH";
+  if (key === "visit" || key === "kunjungan") return "Kunjungan";
+
+  return text;
 }
 
 function normalizeTime(value?: string) {
@@ -372,20 +383,6 @@ function NotificationHeaderButton({
   );
 }
 
-function WhatsAppButton() {
-  return (
-    <a
-      href={WHATSAPP_LINK}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Hubungi WhatsApp"
-      className="home-icon-pop flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-sm ring-1 ring-emerald-200 transition hover:-translate-y-0.5 hover:bg-emerald-100 active:scale-[0.96]"
-    >
-      <PhoneCall size={24} strokeWidth={2.7} />
-    </a>
-  );
-}
-
 function RoleBadges({ items }: { items: Array<string | undefined | null> }) {
   return (
     <div className="mt-4 flex flex-wrap gap-2">
@@ -518,7 +515,6 @@ function AnnouncementList({
 }
 
 export default function HomePage() {
-  const logoSrc = useSiteLogo();
   const [currentTime, setCurrentTime] = useState("");
   const [currentDate, setCurrentDate] = useState("");
   const [user, setUser] = useState<CurrentUser>(defaultUser);
@@ -599,6 +595,9 @@ export default function HomePage() {
         description: today.description || "Menunggu presensi",
         schedule:
           today.schedule || today.workSchedule || today.shiftSchedule || "",
+        workModeLabel: getWorkModeLabel(
+          today.workModeLabel || today.workMode || today.work_mode,
+        ),
       });
 
       setAnnouncements(Array.isArray(list) ? list : []);
@@ -648,11 +647,11 @@ export default function HomePage() {
     <MobileShell
       variant="employee"
       withBottomPadding={false}
-      className="bg-white md:bg-[#f6f8ff]"
+      className="bg-[#f4f8ff] md:bg-[#f6f8ff]"
     >
       <HomeMotionStyles />
 
-      <div className="min-h-dvh bg-white">
+      <div className="min-h-dvh bg-[#f4f8ff] md:bg-white">
         <div className="hidden md:block">
           <AppHeader
             title="Beranda"
@@ -661,99 +660,29 @@ export default function HomePage() {
           />
         </div>
 
-        <main className="creativemu-blue-home min-h-dvh overflow-x-hidden bg-white text-slate-950 md:bg-gradient-to-br md:from-[#f6f8ff] md:via-white md:to-[#eef4ff] md:pb-28">
-          <section
-            className="home-enter bg-white md:hidden"
-            style={{
-              paddingTop: "env(safe-area-inset-top, 0px)",
-            }}
-          >
-            <div className="mx-auto w-full max-w-7xl px-5 pt-6">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="home-icon-pop flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white p-2 ring-1 ring-blue-100">
-                    <Image
-                      src={logoSrc}
-                      alt="Creativemu Logo"
-                      width={64}
-                      height={59}
-                      unoptimized
-                      className="h-full w-full object-contain"
-                      priority
-                    />
-                  </div>
-
-                  <ProfileAvatar user={user} />
-
-                  <div className="min-w-0">
-                    <p className="home-text-reveal text-[10px] font-black uppercase tracking-[0.24em] text-[#123c8c]">
-                      Presensi
-                    </p>
-
-                    <h1
-                      className="home-text-reveal mt-1 truncate text-base font-black text-[#073456]"
-                      style={{
-                        animationDelay: "60ms",
-                      }}
-                    >
-                      {user.name || "Memuat profil..."}
-                    </h1>
-
-                    {mainRoleLabel ? (
-                      <p
-                        className="home-text-reveal truncate text-xs font-bold text-slate-500"
-                        style={{
-                          animationDelay: "100ms",
-                        }}
-                      >
-                        {mainRoleLabel}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-
-                <div className="flex shrink-0 items-center gap-3">
-                  <WhatsAppButton />
-
-                  <NotificationHeaderButton
-                    href="/notifikasi"
-                    unread={hasUnreadAnnouncement}
-                    unreadCount={announcements.length}
-                    onClick={markAnnouncementsAsRead}
-                  />
-                </div>
-              </div>
-
-              <div className="py-7 text-center">
-                <p
-                  className="home-text-reveal text-xs font-black uppercase tracking-[0.24em] text-[#123c8c]"
-                  style={{
-                    animationDelay: "120ms",
-                  }}
-                >
-                  Selamat Datang
-                </p>
-
-                <h2
-                  className="home-text-reveal mt-3 text-4xl font-black tracking-tight text-[#073456]"
-                  style={{
-                    animationDelay: "170ms",
-                  }}
-                >
-                  {firstName ? `Halo, ${firstName}` : "Memuat profil..."}
-                </h2>
-
-                <p
-                  className="home-text-reveal mt-3 text-lg font-bold text-slate-500"
-                  style={{
-                    animationDelay: "220ms",
-                  }}
-                >
-                  Semoga harimu produktif.
-                </p>
-              </div>
-            </div>
-          </section>
+        <main className="creativemu-blue-home min-h-dvh overflow-x-hidden bg-[#f4f8ff] text-slate-950 md:bg-gradient-to-br md:from-[#f6f8ff] md:via-white md:to-[#eef4ff] md:pb-28">
+          <div className="md:hidden">
+            <HomeMobile
+              user={{ name: user.name, profile_photo: user.profile_photo }}
+              roleLabel={mainRoleLabel}
+              attendance={{
+                checkIn: attendanceToday.checkIn,
+                checkOut: attendanceToday.checkOut,
+                status: attendanceToday.status,
+                workModeLabel: attendanceToday.workModeLabel || "",
+              }}
+              announcement={
+                announcements[0]
+                  ? {
+                      title: announcements[0].title,
+                      content: announcements[0].content,
+                    }
+                  : null
+              }
+              hasUnread={hasUnreadAnnouncement}
+              onReadAnnouncements={markAnnouncementsAsRead}
+            />
+          </div>
 
           <section className="mx-auto hidden max-w-7xl px-10 pt-8 md:block lg:px-16">
             <div className="home-enter relative overflow-hidden rounded-[2.2rem] bg-[#123c8c] p-8 text-white shadow-2xl shadow-blue-900/25">
@@ -787,7 +716,7 @@ export default function HomePage() {
             </div>
           </section>
 
-          <section className="mx-auto w-full max-w-7xl bg-white px-5 pb-[8.5rem] pt-2 md:mt-8 md:rounded-[2.5rem] md:px-8 md:pb-10 md:pt-8 lg:px-10">
+          <section className="mx-auto hidden w-full max-w-7xl bg-white px-5 pb-[8.5rem] pt-2 md:mt-8 md:block md:rounded-[2.5rem] md:px-8 md:pb-10 md:pt-8 lg:px-10">
             <div className="mb-6 md:mb-8">
               <QuickMenuGrid />
             </div>
