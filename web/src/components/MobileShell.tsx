@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 import { useSiteLogo } from "@/hooks/useSiteLogo";
@@ -70,7 +70,21 @@ export default function MobileShell({
   className = "",
 }: MobileShellProps) {
   const logoSrc = useSiteLogo();
+  const pathname = usePathname();
+  const scrollRef = useRef<HTMLDivElement>(null);
   const bottomPaddingClass = withBottomPadding ? "pb-24 md:pb-0" : "";
+
+  // Mobile (karyawan): scroll terjadi di dalam shell, bukan di dokumen,
+  // supaya address bar browser HP tidak naik-turun dan bottom nav tetap diam.
+  const mobileScrollClass =
+    variant === "employee"
+      ? "max-md:h-dvh max-md:overflow-y-auto max-md:overscroll-none"
+      : "";
+
+  // Pindah halaman -> kembali ke atas (karena window tidak lagi yang di-scroll)
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0 });
+  }, [pathname]);
 
   const backgroundGlow =
     variant === "admin"
@@ -79,7 +93,8 @@ export default function MobileShell({
 
   return (
     <div
-      className={`relative min-h-dvh overflow-hidden bg-gradient-to-br pt-[env(safe-area-inset-top)] ${backgroundGlow} ${bottomPaddingClass} ${className}`}
+      ref={scrollRef}
+      className={`relative min-h-dvh overflow-hidden bg-gradient-to-br pt-[env(safe-area-inset-top)] ${backgroundGlow} ${bottomPaddingClass} ${mobileScrollClass} ${className}`}
     >
       <AuthStatusGuard enabled={variant !== "auth"} />
 
